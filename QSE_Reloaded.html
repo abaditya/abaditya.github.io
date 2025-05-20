@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QSE Reloaded</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f0f4f8; /* Light modern background */
+            color: #1a202c; /* Dark modern text */
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll due to off-canvas menu */
+            padding-bottom: 60px; /* Space for fixed footer/restart button */
+        }
+        .header {
+            background-color: #2a4365; /* Dark blue header */
+            color: #e2e8f0; /* Light text */
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed; /* Fixed header */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 120;
+        }
+        .header-title {
+            font-size: 1.8em; /* Slightly smaller title */
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+        .header-subtitle {
+            font-size: 0.9em;
+            color: #a0aec0; /* Lighter subtitle text */
+            margin-bottom: 0; /* Remove margin */
+        }
+        .top-nav {
+            display: flex; /* Show on desktop */
+            align-items: center;
+        }
+        .top-nav .nav-link {
+            color: #a0aec0; /* Lighter text for top nav */
+            margin-left: 20px;
+            padding: 5px 0;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        .top-nav .nav-link:hover {
+            color: #e2e8f0; /* Lighter blue on hover */
+            text-decoration: underline;
+        }
+        .top-nav .nav-link.active {
+             color: #e2e8f0; /* White for active link */
+             font-weight: bold;
+        }
+         .logged-in-bar {
+            background-color: #4a5568; /* Medium grey-blue */
+            color: #e2e8f0;
+            padding: 8px 20px;
+            font-size: 0.8em; /* Smaller font */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 50px; /* Space below fixed header */
+        }
+        .logged-in-bar a {
+            color: #90cdf4; /* Light blue links */
+            text-decoration: none; /* No underline by default */
+            cursor: pointer;
+            margin-left: 15px;
+        }
+        .logged-in-bar a:hover {
+            text-decoration: underline;
+        }
+         .logged-in-bar span {
+             color: #e2e8f0;
+         }
+        .container {
+            display: flex;
+            min-height: calc(100vh - 100px); /* Adjust height */
+            margin-top: 10px; /* Space below logged-in bar */
+        }
+        .left-column {
+            width: 250px; /* Adjusted width back slightly, will adjust table inside */
+            padding: 20px;
+            background-color: #e2e8f0; /* Light grey-blue background */
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            transition: transform 0.3s ease-in-out;
+        }
+        .right-column {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #f7fafc; /* Very light background for content */
+        }
+        .section-title {
+            font-size: 1.3em; /* Slightly larger section titles */
+            font-weight: bold;
+            color: #2d3748; /* Darker grey */
+            margin-bottom: 15px; /* More space below title */
+            border-bottom: 2px solid #4a5568; /* Darker underline */
+            padding-bottom: 8px;
+        }
+        /* Hide sidebar nav links on desktop */
+        .left-column .nav-link {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px; /* More space above tables */
+            font-size: 0.9em;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-radius: 8px; /* Rounded corners for tables */
+            overflow: hidden; /* Hide overflow for rounded corners */
+        }
+         /* Specific styles for sidebar leaderboard table */
+         #leaderboard-table {
+             font-size: 0.8em; /* Smaller font for sidebar leaderboard */
+         }
+         #leaderboard-table th, #leaderboard-table td {
+             padding: 6px 8px; /* Reduced padding */
+         }
+         #leaderboard-table .leaderboard-icon {
+             font-size: 1em; /* Smaller icon */
+             margin-right: 3px; /* Less space */
+         }
+        th, td {
+            padding: 12px 15px; /* More padding */
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0; /* Lighter border */
+        }
+        th {
+            background-color: #4299e1; /* Brighter blue header */
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase; /* Uppercase headers */
+            letter-spacing: 0.05em;
+        }
+        tr:nth-child(even) {
+            background-color: #ebf4ff; /* Very light blue for even rows */
+        }
+         tr:hover {
+             background-color: #c3dafe; /* Light blue on hover */
+         }
+         .leaderboard-worth {
+             font-weight: bold;
+         }
+         /* Color coding for worth/price changes */
+         .text-green { color: #38a169; }
+         .text-red { color: #e53e3e; }
+
+         .leaderboard-icon {
+             font-size: 1.2em;
+             margin-right: 5px;
+         }
+        button {
+            background-color: #4299e1; /* Blue button */
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+            font-size: 1em; /* Larger font */
+            transition: background-color 0.2s ease-in-out;
+        }
+         button:hover {
+             background-color: #3182ce; /* Darker blue on hover */
+         }
+         button:disabled {
+             background-color: #a0aec0; /* Grey when disabled */
+             cursor: not-allowed;
+         }
+         /* Restyle Next Period button */
+         #next-session-button {
+             background-color: #38a169; /* Green */
+             font-size: 1.1em;
+             padding: 12px 20px;
+             font-weight: bold;
+         }
+         #next-session-button:hover {
+             background-color: #2f855a; /* Darker green */
+         }
+
+         input[type="text"], input[type="number"], select {
+            padding: 8px; /* More padding */
+            border: 1px solid #a0aec0; /* Grey border */
+            background-color: #fff;
+            margin-right: 8px; /* More space */
+            font-size: 1em;
+            border-radius: 4一層px;
+            width: calc(100% - 16px); /* Adjust width for padding/border */
+        }
+         input[type="text"]:focus, input[type="number"]:focus, select:focus {
+             border-color: #f6e05e; /* Yellow border on focus */
+             outline: none;
+             box-shadow: 0 0 0 3px rgba(246, 224, 94, 0.3); /* Yellow glow */
+         }
+        .success-message {
+            color: #38a169; /* Green */
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .error-message {
+            color: #e53e3e; /* Red */
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+         .news-ticker {
+            background-color: #2d3748; /* Dark grey */
+            color: white;
+            padding: 10px 0; /* More padding */
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            font-size: 0.9em;
+        }
+
+        .news-ticker span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 60s linear infinite; /* Even Slower animation */
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+            100% {
+                transform: translate3d(-200%, 0, 0);
+            }
+        }
+        .ticker-separator {
+            color: #f6e05e; /* Gold separator */
+            font-weight: bold;
+            margin: 0 15px; /* Space around separator */
+        }
+
+        /* Basic styling for the main content sections (initially hidden) */
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+
+        /* Setup/Auth Page Styles */
+        .setup-container {
+            max-width: 600px; /* Wider for rules section */
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .setup-container h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+        .setup-form label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+         .setup-form div {
+             margin-bottom: 15px;
+             text-align: left;
+         }
+        .setup-form input[type="text"] {
+            padding: 8px; /* More padding */
+            border: 1px solid #a0aec0; /* Grey border */
+            background-color: #fff;
+            margin-right: 8px; /* More space */
+            font-size: 1em;
+            border-radius: 4一層px;
+            width: calc(100% - 16px); /* Adjust width for padding/border */
+        }
+        /* Hide select elements for fixed parameters */
+        .setup-form select {
+            display: none;
+        }
+        .setup-form button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            background-color: #38a169; /* Green button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+         .setup-form button:hover {
+             background-color: #2f855a; /* Darker green */
+         }
+
+         .rules-section {
+             margin-top: 30px;
+             text-align: left;
+             border-top: 1px solid #e2e8f0;
+             padding-top: 20px;
+         }
+         .rules-section h3 {
+             font-size: 1.4em;
+             margin-bottom: 15px;
+             color: #2d3748;
+         }
+         .rules-section p {
+             margin-bottom: 10px;
+             color: #4a5568;
+         }
+         .rules-section ul {
+             list-style: disc;
+             margin-left: 20px;
+             margin-bottom: 10px;
+         }
+         .rules-section li {
+             margin-bottom: 5px;
+         }
+
+         .setup-form .checkbox-option {
+             display: flex;
+             align-items: center;
+             margin-bottom: 10px;
+         }
+
+         .setup-form .checkbox-option input[type="checkbox"] {
+             margin-right: 10px;
+             width: auto; /* Override width calc */
+         }
+
+         .setup-form .checkbox-option label {
+             margin-bottom: 0;
+         }
+
+         .setup-form .ai-description {
+             font-size: 0.9em;
+             color: #4a5568;
+             margin-top: 5px;
+             margin-left: 25px; /* Align with checkbox */
+         }
+
+
+        /* Game Over Screen */
+        #game-over-content { /* Changed ID to avoid conflict with the section div */
+            display: none; /* Initially hidden */
+            max-width: 800px;
+            margin: 20px auto; /* Adjusted margin */
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+         #game-over-content h2 {
+             font-size: 2em;
+             color: #2c5282; /* Darker blue */
+             margin-bottom: 20px;
+         }
+         #game-over-content table {
+             margin-top: 20px;
+         }
+
+         /* Hamburger Menu Styles */
+         .hamburger {
+             display: none; /* Hidden by default on larger screens */
+             font-size: 1.8em;
+             cursor: pointer;
+             color: #e2e8f0;
+             z-index: 110; /* Above sidebar */
+         }
+
+         @media (max-width: 768px) {
+             .left-column {
+                 position: fixed;
+                 top: 0;
+                 left: 0;
+                 height: 100vh;
+                 transform: translateX(-250px); /* Off-screen by default (match width) */
+                 z-index: 100;
+                 box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
+                 padding-top: 60px; /* Space for header */
+                 overflow-y: auto; /* Enable scrolling if content is long */
+             }
+             .left-column.open {
+                 transform: translateX(0); /* Slide in */
+             }
+             .container {
+                 flex-direction: column; /* Stack columns */
+             }
+             .right-column {
+                 padding: 10px; /* Less padding on mobile */
+             }
+             .hamburger {
+                 display: block; /* Show hamburger on small screens */
+             }
+             .header {
+                 position: fixed;
+                 top: 0;
+                 left: 0;
+                 width: 100%;
+                 z-index: 120; /* Above sidebar and content */
+             }
+             .logged-in-bar {
+                 margin-top: 50px; /* Space below fixed header */
+             }
+             .news-ticker {
+                 bottom: 0; /* Keep ticker at bottom */
+             }
+             /* Show sidebar nav links on mobile */
+             .left-column .nav-link {
+                 display: block;
+             }
+             /* Hide top nav links on mobile */
+             .top-nav {
+                 display: none;
+             }
+         }
+
+         /* Fixed Footer for Restart Button */
+         .footer-controls {
+             position: fixed;
+             bottom: 0;
+             left: 0;
+             width: 100%;
+             background-color: #f7fafc; /* Match content background */
+             padding: 10px 20px;
+             text-align: center;
+             box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+             z-index: 90; /* Below ticker, above content */
+         }
+
+         /* Style for in-table trade inputs and button */
+         .trade-controls {
+             white-space: nowrap; /* Prevent wrapping */
+         }
+         .trade-controls input[type="number"] {
+             padding: 4px 8px;
+             font-size: 0.8em;
+             margin-right: 5px;
+             vertical-align: middle;
+             width: 60px; /* Fixed width for number input */
+         }
+         .trade-controls .trade-button {
+             padding: 4px 10px;
+             font-size: 0.8em;
+             margin-right: 5px;
+             vertical-align: middle;
+         }
+         .trade-controls .buy-button {
+             background-color: #38a169; /* Green for Buy */
+         }
+         .trade-controls .buy-button:hover {
+             background-color: #2f855a;
+         }
+         .trade-controls .sell-button {
+             background-color: #e53e3e; /* Red for Sell */
+         }
+          .trade-controls .sell-button:hover {
+             background-color: #c53030;
+         }
+
+         /* Chart container styles - Keep the class but remove the content */
+         .chart-container {
+             display: none; /* Hide the container */
+         }
+
+
+         /* Sidebar New Game Button */
+         #sidebar-new-game-button {
+             display: block; /* Show in sidebar */
+             width: 100%; /* Full width in sidebar */
+             margin-top: 20px; /* Space above */
+             background-color: #e53e3e; /* Red for New Game */
+             font-weight: bold;
+             padding: 12px 15px;
+         }
+         #sidebar-new-game-button:hover {
+             background-color: #c53030;
+         }
+
+         /* In-page Confirmation Modal Styles */
+         .modal-overlay {
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             z-index: 150; /* Above everything else */
+             visibility: hidden; /* Hidden by default */
+             opacity: 0;
+             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+         }
+         .modal-overlay.visible {
+             visibility: visible;
+             opacity: 1;
+         }
+
+         .modal-content {
+             background-color: #fff;
+             padding: 30px;
+             border-radius: 12px;
+             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+             text-align: center;
+             max-width: 400px;
+             width: 90%;
+         }
+         .modal-content h3 {
+             font-size: 1.5em;
+             margin-bottom: 20px;
+             color: #2d3748;
+         }
+         .modal-buttons {
+             display: flex;
+             justify-content: space-around;
+             gap: 15px; /* Space between buttons */
+         }
+         .modal-buttons button {
+             padding: 10px 20px;
+             font-size: 1em;
+             border-radius: 5px;
+             cursor: pointer;
+             transition: background-color 0.2s ease-in-out;
+         }
+         .modal-buttons .confirm-button {
+             background-color: #38a169; /* Green for Confirm */
+             color: white;
+         }
+         .modal-buttons .confirm-button:hover {
+             background-color: #2f855a;
+         }
+         .modal-buttons .cancel-button {
+             background-color: #e53e3e; /* Red for Cancel */
+             color: white;
+         }
+         .modal-buttons .cancel-button:hover {
+             background-color: #c53030;
+         }
+
+         /* Style for human player row in leaderboard */
+         .human-player-row {
+             background-color: #d0e9ff !important; /* Light blue highlight */
+             font-weight: bold;
+         }
+
+
+    </style>
+</head>
+<body>
+
+    <div id="setup-page" class="setup-container">
+        <div id="setup-status-messages" class="mb-4"></div>
+        <h2 id="setup-title">QSE Reloaded Setup</h2>
+        <form id="setup-form" class="setup-form">
+            <div>
+                <label for="player-name">Your Name:</label>
+                <input type="text" id="player-name" placeholder="Enter your name" required>
+            </div>
+            <div class="checkbox-option">
+                 <input type="checkbox" id="include-agent-smith" checked>
+                 <label for="include-agent-smith">Include Agent Smith</label>
+             </div>
+             <div class="ai-description">
+                 Agent Smith has unparalleled insight into market forces, allowing him to make trades with near-perfect foresight. Challenge him at your own risk.
+             </div>
+            <button type="submit" id="start-game-button">Start Game</button>
+        </form>
+
+        <div class="rules-section">
+            <h3>Rules and How to Play</h3>
+            <p>Welcome to QSE Reloaded! Your goal is to amass the highest net worth by trading stocks over 10 rounds against 5 computer opponents.</p>
+            <p>Here are the key rules:</p>
+            <ul>
+                <li>You start with $1,000,000 in cash and 100 shares of each of the 10 listed companies.</li>
+                <li>There is no limit on the number of transactions you can make each round.</li>
+                <li>News tickers at the bottom provide information that can influence stock prices.</li>
+                <li>You control when to end the current round and advance to the next.</li>
+                <li>The game ends after 10 rounds. Your final ranking is based on your total net worth (cash + value of stocks).</li>
+                <li>All rounds need to be played.</li>
+                <li>Orders cannot be changed once placed.</li>
+                <li>No complaints on the price of shares will be entertained.</li>
+            </ul>
+            <p>Use the navigation links to view your portfolio, transaction history, stock history, latest news, and the full leaderboard.</p>
+        </div>
+    </div>
+
+
+    <div id="game-interface" style="display: none;">
+        <div class="header">
+             <div class="hamburger" id="hamburger-menu">&#9776;</div>
+             <div class="text-center flex-grow">
+                <div class="header-title">QSE Reloaded</div>
+            </div>
+            <div class="top-nav">
+                 <a href="#" class="nav-link" data-section="portfolios">Portfolios</a>
+                 <a href="#" class="nav-link" data-section="portfolio-history">Portfolio History</a>
+                 <a href="#" class="nav-link" data-section="stock-history">Stock History</a>
+                 <a href="#" class="nav-link" data-section="latest-news">Latest News</a>
+                 <a href="#" class="nav-link" data-section="transaction-log">Transaction log</a>
+                 <a href="#" class="nav-link" data-section="full-leaderboard">Full Leaderboard</a>
+                 <a href="#" class="nav-link" data-section="help">Rules</a>
+                 <a href="#" class="nav-link" data-section="about">About</a>
+            </div>
+             <div class="w-10"></div>
+        </div>
+
+        <div class="logged-in-bar">
+            <span>Player: <span id="logged-in-username"></span></span>
+             <div>
+                 </div>
+        </div>
+
+        <div class="container">
+            <div class="left-column" id="left-column">
+                <div class="section-title mt-8">Leaderboard</div>
+                <div id="user-rank" class="mb-4">Your Rank: -</div>
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Worth</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+                 <button id="sidebar-new-game-button" class="bg-red-500 hover:bg-red-700">New Game</button>
+            </div>
+
+            <div class="right-column">
+                 <div id="session-control" class="text-center mb-4">
+                     <div id="session-info" class="mb-2">
+                        Current Round: <span id="current-session">1</span> / <span id="total-sessions">10</span>
+                    </div>
+                     <button id="next-session-button">End Round and Advance</button>
+                     <div id="game-status-message" class="status-message mt-2"></div>
+                 </div>
+
+
+                <div id="portfolios-section" class="content-section active">
+                     <div id="status-messages" class="mb-4">
+                         </div>
+                     <div class="mb-4">
+                         <span class="font-bold">Round: <span id="current-session-display">1</span></span>
+                         <span class="font-bold ml-8">Balance: <span id="current-cash">$0.00</span></span>
+                     </div>
+                     <div class="mt-4 mb-4 font-bold">Net worth: <span id="net-worth">$0.00</span></div>
+                     <h2 class="section-title">Your Portfolio</h2>
+                     <table id="stock-list">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>No shares</th>
+                                <th>Share value</th>
+                                <th>Total value</th>
+                                <th>Trade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+
+
+                </div>
+
+                 <div id="portfolio-history-section" class="content-section">
+                    <h2 class="section-title">Portfolio History</h2>
+                    <table id="portfolio-history-table">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+
+                 <div id="stock-history-section" class="content-section">
+                    <h2 class="section-title">Stock Price history</h2>
+                     <table id="stock-history-table">
+                        <thead>
+                            <tr>
+                                <th>Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+
+                 <div id="latest-news-section" class="content-section">
+                    <h2 class="section-title">Latest News</h2>
+                     <div class="border border-gray-400 p-4 bg-white rounded-md">
+                        <div class="section-title border-b border-gray-400 mb-2 pb-1">Headline</div>
+                        <div id="news-feed">
+                            </div>
+                     </div>
+                </div>
+
+                 <div id="transaction-log-section" class="content-section">
+                    <h2 class="section-title">Transaction log</h2>
+                     <table id="transaction-log-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Stock</th>
+                                <th>No shares traded</th>
+                                <th>Round</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+
+                 <div id="help-section" class="content-section">
+                    <h2 class="section-title">Rules and General information</h2>
+                    <div class="border border-gray-400 p-4 bg-white rounded-md">
+                        <p>Rules and General information about the Stock Market Game;</p>
+                        <p>The transactions will be only for the listed companies.</p>
+                        <p>The transactions will be simple buy and sell .</p>
+                        <p>Short selling, futures and options transactions are  not supported .</p>
+                        <p>You will start with 1,000,000 in cash and 100 shares of each listed company.</p>
+                        <li>There is no limit on the number of transactions you can make each round.</li>
+                        <li>News tickers at the bottom provide information that can influence stock prices.</li>
+                        <li>You control when to end the current round and advance to the next.</li>
+                        <li>The game ends after the specified number of rounds. Your final ranking is based on your total net worth (cash + value of stocks).</li>
+                        <li>All rounds need to be played.</li>
+                        <li>Orders once placed cannot be changed.</li>
+                        <li>No complaints on the price of shares will be entertained.</li>
+                    </ul>
+            <p>Use the navigation links to view your portfolio, transaction history, stock history, latest news, and the full leaderboard.</p>
+        </div>
+    </div>
+
+        <div id="full-leaderboard-section" class="content-section">
+            <h2 class="section-title">Full Leaderboard</h2>
+            <table id="full-leaderboard-table">
+                <thead>
+                    <tr>
+                         <th></th> <th>Pos</th>
+                        <th>Name</th>
+                        <th>Cash in hand</th>
+                        <th>Total stock value</th>
+                        <th>Net value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="game-over-content">
+            <h2>Game Over!</h2>
+            <p>The game has ended. Here are the final standings:</p>
+             <button id="play-again-button" class="mt-8">Play Again</button>
+             <table id="final-leaderboard-table">
+                <thead>
+                    <tr>
+                        <th></th> <th>Pos</th>
+                        <th>Name</th>
+                        <th>Cash in hand</th>
+                        <th>Total stock value</th>
+                        <th>Net value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+         <div id="about-section" class="content-section">
+             <h2 class="section-title">About QSE Reloaded</h2>
+             <p>QSE Reloaded is a simple stock market simulation game developed as an interactive coding exercise.</p>
+             <p>Version: 1.0</p>
+             <p>Developed by Gemini.</p>
+         </div>
+
+
+        <div id="confirmation-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3 id="confirmation-message">Are you sure you want to end the current round and advance?</h3>
+                <div class="modal-buttons">
+                    <button id="confirm-advance-button" class="confirm-button">Yes, Advance</button>
+                    <button id="cancel-advance-button" class="cancel-button">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div> </div> <div class="news-ticker">
+        <span id="ticker-text">Loading news...</span>
+    </div>
+
+
+    <script>
+        // --- Game Data Pools ---
+        const fullStockList = [
+             { id: 1, symbol: 'GEAR', company_name: 'GearHead Motors', initial_price: 175.00, category_id: 1 }, // Auto
+             { id: 2, symbol: 'PILL', company_name: 'PillFort Pharma', initial_price: 2700.00, category_id: 2 }, // Pharma
+             { id: 3, symbol: 'FINF', company_name: 'FinFinancial Corp', initial_price: 280.00, category_id: 3 }, // Finance
+             { id: 4, symbol: 'SNAC', company_name: 'SnackAttack Foods', initial_price: 3200.00, category_id: 4 }, // FMCG
+             { id: 5, symbol: 'BYTE', company_name: 'ByteBurst Tech', initial_price: 900.00, category_id: 5 }, // IT/Tech
+             { id: 6, symbol: 'TALK', company_name: 'TalkWave Telecom', initial_price: 200.00, category_id: 6 }, // Telecom
+             { id: 7, symbol: 'CURE', company_name: 'CureQuick Labs', initial_price: 600.00, category_id: 2 }, // Pharma
+             { id: 8, symbol: 'WHEEL', company_name: 'Wheelie Good Autos', initial_price: 150.00, category_id: 1 }, // Auto
+             { id: 9, symbol: 'CRUNCH', company_name: 'CrunchyGoods Inc.', initial_price: 220.00, category_id: 4 }, // FMCG
+             { id: 10, symbol: 'CODE', company_name: 'CodeCrafters Solutions', initial_price: 140.00, category_id: 5 }, // IT/Tech
+             { id: 11, symbol: 'AERO', company_name: 'AeroFly Airlines', initial_price: 500.00, category_id: 7 }, // Aviation (New Category)
+             { id: 12, symbol: 'MINE', company_name: 'RockSolid Mining', initial_price: 800.00, category_id: 8 }, // Mining (New Category)
+             { id: 13, symbol: 'ENRG', company_name: 'PowerUp Energy', initial_price: 1200.00, category_id: 9 }, // Energy (New Category)
+             { id: 14, symbol: 'MEDI', company_name: 'MediCare Solutions', initial_price: 750.00, category_id: 2 }, // Pharma
+             { id: 15, symbol: 'BANK', company_name: 'SecureBank', initial_price: 400.00, category_id: 3 }, // Finance
+             { id: 16, symbol: 'FOOD', company_name: 'TastyBites Corp', initial_price: 300.00, category_id: 4 }, // FMCG
+             { id: 17, symbol: 'CLOUD', company_name: 'CloudNine Services', initial_price: 1500.00, category_id: 5 }, // IT/Tech
+             { id: 18, symbol: 'WIFI', company_name: 'ConnectAll Telecom', initial_price: 180.00, category_id: 6 }, // Telecom
+             { id: 19, symbol: 'BIO', company_name: 'BioGen Pharmaceuticals', initial_price: 950.00, category_id: 2 }, // Pharma
+             { id: 20, symbol: 'AUTOX', company_name: 'AutoXpress', initial_price: 210.00, category_id: 1 }, // Auto
+             { id: 21, symbol: 'GLDM', company_name: 'GoldenHarvest Foods', initial_price: 250.00, category_id: 4 }, // FMCG
+             { id: 22, symbol: 'CYBR', company_name: 'CyberShield Security', initial_price: 1100.00, category_id: 5 }, // IT/Tech
+             { id: 23, symbol: 'CELL', company_name: 'CellularLink', initial_price: 160.00, category_id: 6 }, // Telecom
+             { id: 24, symbol: 'INV', company_name: 'InvestRight Advisors', initial_price: 350.00, category_id: 3 }, // Finance
+             { id: 25, symbol: 'DRILL', company_name: 'DeepDrill Energy', initial_price: 1350.00, category_id: 9 }, // Energy
+             { id: 26, symbol: 'SKY', company_name: 'SkyHigh Aviation', initial_price: 550.00, category_id: 7 }, // Aviation
+             { id: 27, symbol: 'ORE', company_name: 'OreFind Mining', initial_price: 850.00, category_id: 8 }, // Mining
+             { id: 28, symbol: 'VACC', company_name: 'VaxRite Labs', initial_price: 700.00, category_id: 2 }, // Pharma
+             { id: 29, symbol: 'CAP', company_name: 'CapitalGrowth Partners', initial_price: 420.00, category_id: 3 }, // Finance
+             { id: 30, symbol: 'SWEET', company_name: 'SweetTooth Confections', initial_price: 280.00, category_id: 4 }, // FMCG
+             { id: 31, symbol: 'NET', company_name: 'NetConnect Solutions', initial_price: 980.00, category_id: 5 }, // IT/Tech
+             { id: 32, symbol: 'TOWER', company_name: 'TowerComm', initial_price: 190.00, category_id: 6 }, // Telecom
+             { id: 33, symbol: 'DRIVE', company_name: 'DriveEasy Motors', initial_price: 195.00, category_id: 1 }, // Auto
+             { id: 34, symbol: 'HEALTH', company_name: 'HealthFirst Pharma', initial_price: 2550.00, category_id: 2 }, // Pharma
+             { id: 35, symbol: 'FUND', company_name: 'FundFlow Financial', initial_price: 310.00, category_id: 3 }, // Finance
+             { id: 36, symbol: 'CRISP', company_name: 'CrispySnacks Inc.', initial_price: 205.00, category_id: 4 }, // FMCG
+             { id: 37, symbol: 'DATA', company_name: 'DataStream Tech', initial_price: 1050.00, category_id: 5 }, // IT/Tech
+             { id: 38, symbol: 'WAVE', company_name: 'WaveLink Telecom', initial_price: 230.00, category_id: 6 }, // Telecom
+             { id: 39, symbol: 'MEDX', company_name: 'MedX Labs', initial_price: 650.00, category_id: 2 }, // Pharma
+             { id: 40, symbol: 'ROBOT', company_name: 'RoboMech Autos', initial_price: 165.00, category_id: 1 }, // Auto
+             { id: 41, symbol: 'GRAIN', company_name: 'GrainHarvest Foods', initial_price: 260.00, category_id: 4 }, // FMCG
+             { id: 42, symbol: 'SOFT', company_name: 'SoftCode Solutions', initial_price: 920.00, category_id: 5 }, // IT/Tech
+             { id: 43, symbol: 'LINE', company_name: 'LineConnect Telecom', initial_price: 170.00, category_id: 6 }, // Telecom
+             { id: 44, symbol: 'TRST', company_name: 'TrustyBank', initial_price: 380.00, category_id: 3 }, // Finance
+             { id: 45, symbol: 'FUEL', company_name: 'FuelMax Energy', initial_price: 1400.00, category_id: 9 }, // Energy
+             { id: 46, symbol: 'WING', company_name: 'WingSpan Aviation', initial_price: 520.00, category_id: 7 }, // Aviation
+             { id: 47, symbol: 'ROCK', company_name: 'RockExtract Mining', initial_price: 820.00, category_id: 8 }, // Mining
+             { id: 48, symbol: 'CUREX', company_name: 'CureAll Pharma', initial_price: 720.00, category_id: 2 }, // Pharma
+             { id: 49, symbol: 'ASSET', company_name: 'AssetManage Financial', initial_price: 450.00, category_id: 3 }, // Finance
+             { id: 50, symbol: 'DELISH', company_name: 'DelishFoods Inc.', initial_price: 290.00, category_id: 4 } // FMCG
+        ];
+
+        // Pool of 15 stocks to choose from for a game instance
+        const stockPool = fullStockList.slice(0, 15); // Select the first 15 stocks
+
+        // Mapping of stock_category_id to stock symbols (updated for larger pool)
+        const fullCategoryMap = {
+            1: ['GEAR', 'WHEEL', 'AUTOX', 'DRIVE', 'ROBOT'], // Auto
+            2: ['PILL', 'CURE', 'MEDI', 'BIO', 'VACC', 'HEALTH', 'MEDX', 'CUREX'], // Pharma/Healthcare
+            3: ['FINF', 'BANK', 'INV', 'CAP', 'TRST', 'ASSET'], // Finance
+            4: ['SNAC', 'CRUNCH', 'FOOD', 'GLDM', 'SWEET', 'CRISP', 'GRAIN', 'DELISH'], // FMCG/Consumer Spending
+            5: ['BYTE', 'CODE', 'CLOUD', 'CYBR', 'NET', 'DATA', 'SOFT'], // IT/Tech
+            6: ['TALK', 'WIFI', 'CELL', 'TOWER', 'WAVE', 'LINE'], // Telecom/Mobile
+            7: ['AERO', 'SKY', 'WING'], // Aviation
+            8: ['MINE', 'ORE', 'ROCK'], // Mining
+            9: ['ENRG', 'DRILL', 'FUEL'] // Energy
+        };
+
+
+         // Provided ticker data (converted to JS array) - Use the full list
+         const tickerData = [
+             { id: 5, disp: 'Steel prices head northward due to favourable export policies', factor: -0.22, stock_category_id: 1, period_id: 1 },
+             { id: 6, disp: 'New patent laws passed for pharmaceuticals - bane or boon?', factor: -0.115, stock_category_id: 2, period_id: 1 },
+             { id: 7, disp: 'RBI hikes CRR by 0.75', factor: -0.173, stock_category_id: 3, period_id: 1 },
+             { id: 8, disp: 'Edelweiss suggests high consumer spending activity in the FMCG space', factor: 0.05, stock_category_id: 4, period_id: 1 },
+             { id: 9, disp: 'Appreciation in local currency seen for last two months', factor: -0.07, stock_category_id: 5, period_id: 1 },
+             { id: 10, disp: 'Dragon Motors announces its plans for producing lowest cost SUV', factor: -0.08, stock_category_id: 1, period_id: 8 },
+             { id: 11, disp: 'FDA files case of patent infringement against a major Indian pharmaceuticals firm', factor: -0.27, stock_category_id: 2, period_id: 8 },
+             { id: 12, disp: 'Gartner report suggests further turmoil in the financial sector', factor: -0.123, stock_category_id: 3, period_id: 8 },
+             { id: 13, disp: 'Record sales seen for in last quarter in personal healthcare space', factor: 0.17, stock_category_id: 4, period_id: 8 },
+             { id: 14, disp: 'IT service companies cap their campus recruitment programs for the next quarter', factor: -0.187, stock_category_id: 5, period_id: 8 },
+             { id: 15, disp: 'New technology promises to replace steel with reinforced plastic fibres', factor: 0.35, stock_category_id: 1, period_id: 9 },
+             { id: 16, disp: 'Local researcher discovers breakthrough drug to treat heart ailments. Pharmaceuticals eye deal with researcher.', factor: 0.4, stock_category_id: 2, period_id: 9 },
+             { id: 17, disp: 'External commercial borrowing restrictions removed', factor: 0.01, stock_category_id: 3, period_id: 9 },
+             { id: 18, disp: 'Branding exercises being undertaken by major FMCG companies', factor: 0, stock_category_id: 4, period_id: 9 },
+             { id: 19, disp: 'Finance sector clients renegotiating IT maintenance contracts', factor: -0.42, stock_category_id: 5, period_id: 9 },
+             { id: 20, disp: 'Fuel prices skyrocket', factor: -0.25, stock_category_id: 1, period_id: 10 },
+             { id: 21, disp: 'Spurious drug shipment netted by local police', factor: -0.09, stock_category_id: 2, period_id: 10 },
+             { id: 22, disp: 'Confidence at all time low on Wall Street\'s Blue Chips', factor: -0.135, stock_category_id: 3, period_id: 10 },
+             { id: 23, disp: 'New spicy toothpaste captures the tastes of the nation', factor: 0.49, stock_category_id: 4, period_id: 10 },
+             { id: 24, disp: 'Leading Fortune 500 companies follow in the footsteps of Financial companies', factor: -0.43, stock_category_id: 5, period_id: 10 },
+             { id: 25, disp: 'Educational institute research finds a link between SMS usage and literary skills', factor: -0.09, stock_category_id: 6, period_id: 10 },
+             { id: 26, disp: 'Dragon Motors plans technical tie ups with local entities', factor: 0.189, stock_category_id: 1, period_id: 11 },
+             { id: 27, disp: 'Local pharmaceuticals industry features in the global top 5', factor: 0.45, stock_category_id: 2, period_id: 11 },
+             { id: 28, disp: 'Governments come to the rescue of major former financial giants', factor: 0.21, stock_category_id: 3, period_id: 11 },
+             { id: 29, disp: 'FMCG majors try to eliminate middlemen using remote kiosks in rural areas', factor: 0.11, stock_category_id: 4, period_id: 11 },
+             { id: 30, disp: 'Local IT firms face stiff competition from other developing nations', factor: -0.31, stock_category_id: 5, period_id: 11 },
+             { id: 31, disp: 'QSNL to be the first 3G service provider', factor: -0.28, stock_category_id: 6, period_id: 11 },
+             { id: 32, disp: 'Tax sops to auto companies for greenfield projects', factor: 0.03, stock_category_id: 1, period_id: 12 },
+             { id: 33, disp: 'Sipla to discontinue cancer research locally', factor: -0.34, stock_category_id: 2, period_id: 12 },
+             { id: 34, disp: 'IMF grants $2 billion loan to nation', factor: 0, stock_category_id: 3, period_id: 12 },
+             { id: 35, disp: 'Small FMCG players eating the lunch of larger players in rural markets', factor: -0.39, stock_category_id: 4, period_id: 12 },
+             { id: 36, symbol: 'Karvy: Under – weight on IT sector', factor: -0.5, stock_category_id: 5, period_id: 12 },
+             { id: 37, disp: '3G introduction fuels demand for next generation phones', factor: 0.33, stock_category_id: 6, period_id: 12 },
+             { id: 38, disp: 'Government bans 15 year old vehicles from roads nationwide', factor: 0.7, stock_category_id: 1, period_id: 13 },
+             { id: 39, disp: 'Government stocks up on Avian Flu vaccines in anticipation of major epidemic', factor: 0.5, stock_category_id: 2, period_id: 13 },
+             { id: 40, disp: 'Government cuts interest rates', factor: 0.67, stock_category_id: 3, period_id: 13 },
+             { id: 41, disp: 'Major packing material shortage', factor: -0.179, stock_category_id: 4, period_id: 13 },
+             { id: 42, disp: 'IT revenues from Europe show an increasing trend', factor: 0.37, stock_category_id: 5, period_id: 13 },
+             { id: 43, disp: 'Scientists claim 4G networks to increase speeds 100x', factor: 0.001, stock_category_id: 6, period_id: 13 },
+             { id: 44, disp: 'CNG made mandatory for all private vehicles', factor: 0.01, stock_category_id: 1, period_id: 14 },
+             { id: 45, disp: 'Healthcare Ministry berates pharmaceuticals for high drug prices', factor: -0.267, stock_category_id: 2, period_id: 14 },
+             { id: 46, disp: 'Bernanke & Paulson urge lawmakers to pass bailout', factor: 0.3, stock_category_id: 3, period_id: 14 },
+             { id: 47, disp: 'Highly publicized motorized toothbrushes flop', factor: -0.15, stock_category_id: 4, period_id: 14 },
+             { id: 48, disp: 'Software as a Service: the new shiny object', factor: 0.61, stock_category_id: 5, period_id: 14 },
+             { id: 49, disp: 'Customers enthusiastic about the new number portability option', factor: -0.29, stock_category_id: 6, period_id: 14 },
+             { id: 50, disp: 'Hybrid cars to be the next big introduction', factor: 0.44, stock_category_id: 1, period_id: 15 },
+             { id: 51, disp: 'Latest survey shows rising public confidence in homoeopathy', factor: -0.155, stock_category_id: 2, period_id: 15 },
+             { id: 52, disp: 'Bush: US taking bold steps to settle markets', factor: 0.1, stock_category_id: 3, period_id: 15 },
+             { id: 53, disp: 'GnP mulling price cuts across products', factor: -0.11, stock_category_id: 4, period_id: 15 },
+             { id: 54, disp: 'Social networking considered trendy in enterprises', factor: 0.234, stock_category_id: 5, period_id: 15 },
+             { id: 55, disp: 'Government refuses to introduce Blackberry without tapping mechanisms', factor: -0.02, stock_category_id: 6, period_id: 15 },
+             { id: 56, disp: 'Government to replace fleet with hybrids', factor: 0.53, stock_category_id: 1, period_id: 16 },
+             { id: 57, disp: 'Local pharmaceutical companies eye ailing global giants', factor: 0.77, stock_category_id: 2, period_id: 16 },
+             { id: 58, disp: 'Greenspan: Fed steps not sustainable', factor: -0.78, stock_category_id: 3, period_id: 16 },
+             { id: 59, disp: 'Sale volumes surge on the back of resurgent economy', factor: 0.75, stock_category_id: 4, period_id: 16 },
+             { id: 60, disp: 'Local IT service companies struggling to keep up with the latest SOA developments', factor: -0.14, stock_category_id: 5, period_id: 16 },
+             { id: 61, disp: 'Small players to benefit from infrastructure sharing regulations', factor: 0.22, stock_category_id: 6, period_id: 16 },
+             { id: 62, disp: 'TRAI mulls 3G option', factor: 0.15, stock_category_id: 6, period_id: 1 },
+             { id: 63, disp: 'Spectrum allocation in favour of telecom companies', factor: 0.2, stock_category_id: 6, period_id: 8 },
+             { id: 64, disp: 'Major cuts in advertisement spending by telecom giants', factor: 0.04, stock_category_id: 6, period_id: 9 },
+             // Add more random/humorous news events here with appropriate category_ids and factors
+              { id: 65, disp: 'Flying car prototypes hit turbulence; AeroFly stock dips.', factor: -0.3, stock_category_id: 7, period_id: 17 },
+              { id: 66, disp: 'New asteroid mining tech boosts RockSolid Mining outlook.', factor: 0.4, stock_category_id: 8, period_id: 17 },
+              { id: 67, disp: 'Solar fusion breakthrough announced by PowerUp Energy.', factor: 0.8, stock_category_id: 9, period_id: 17 },
+              { id: 68, disp: 'SnackAttack Foods launches new "Mystery Flavor" chips, sales surge.', factor: 0.25, stock_category_id: 4, period_id: 17 },
+              { id: 69, disp: 'CyberShield Security thwarts major global hack.', factor: 0.35, stock_category_id: 5, period_id: 17 },
+              { id: 70, disp: 'Teleportation patent granted to TalkWave Telecom, disrupting travel.', factor: 0.9, stock_category_id: 6, period_id: 18 },
+              { id: 71, disp: 'Underwater mining operation by OreFind Mining discovers rare minerals.', factor: 0.45, stock_category_id: 8, period_id: 18 },
+              { id: 72, disp: 'FinFinancial Corp embroiled in scandal over questionable investments.', factor: -0.6, stock_category_id: 3, period_id: 18 },
+              { id: 73, disp: 'GearHead Motors unveils self-driving unicycle concept.', factor: 0.15, stock_category_id: 1, period_id: 18 },
+              { id: 74, disp: 'PillFort Pharma\'s new anti-gravity pill causes unexpected side effects.', factor: -0.4, stock_category_id: 2, period_id: 18 },
+               { id: 75, disp: 'New battery technology revolutionizes Auto industry.', factor: 0.6, stock_category_id: 1, period_id: 19 },
+               { id: 76, disp: 'Breakthrough in cancer treatment announced by CureQuick Labs.', factor: 0.7, stock_category_id: 2, period_id: 19 },
+               { id: 77, disp: 'Global economic forecast positive, boosting Finance sector.', factor: 0.5, stock_category_id: 3, period_id: 19 },
+               { id: 78, disp: 'New health food trend increases demand for FMCG products.', factor: 0.3, stock_category_id: 4, period_id: 19 },
+               { id: 79, disp: 'AI development accelerates, benefiting IT/Tech companies.', factor: 0.8, stock_category_id: 5, period_id: 19 },
+               { id: 80, disp: '5G rollout completed nationwide, boosting Telecom sector.', factor: 0.4, stock_category_id: 6, period_id: 19 },
+               { id: 81, disp: 'Space tourism takes off, lifting Aviation stocks.', factor: 0.75, stock_category_id: 7, period_id: 20 },
+               { id: 82, disp: 'Discovery of rare earth minerals in new mine site.', factor: 0.65, stock_category_id: 8, period_id: 20 },
+               { id: 83, disp: 'Government invests heavily in renewable Energy projects.', factor: 0.7, stock_category_id: 9, period_id: 20 },
+               { id: 84, disp: 'Luxury car sales hit record highs.', factor: 0.45, stock_category_id: 1, period_id: 20 },
+               { id: 85, disp: 'New regulations impact pharmaceutical pricing.', factor: -0.2, stock_category_id: 2, period_id: 20 },
+               { id: 86, disp: 'Interest rates remain low, favorable for borrowing.', factor: 0.1, stock_category_id: 3, period_id: 20 },
+               { id: 87, disp: 'Supply chain issues affect FMCG production.', factor: -0.15, stock_category_id: 4, period_id: 20 },
+               { id: 88, disp: 'Cybersecurity breaches cost IT firms millions.', factor: -0.3, stock_category_id: 5, period_id: 20 },
+               { id: 89, disp: 'Increased competition in the mobile market.', factor: -0.1, stock_category_id: 6, period_id: 20 },
+               { id: 90, disp: 'Airline profits soar during holiday season.', factor: 0.35, stock_category_id: 7, period_id: 21 },
+               { id: 91, disp: 'Mining safety concerns lead to temporary shutdowns.', factor: -0.25, stock_category_id: 8, period_id: 21 },
+               { id: 92, disp: 'Oil prices stabilize after recent volatility.', factor: 0.05, stock_category_id: 9, period_id: 21 },
+               { id: 93, disp: 'Electric vehicle demand continues to rise.', factor: 0.55, stock_category_id: 1, period_id: 21 },
+               { id: 94, disp: 'New drug shows promise in clinical trials.', factor: 0.4, stock_category_id: 2, period_id: 21 },
+               { id: 95, disp: 'Investment banking sees strong performance.', factor: 0.3, stock_category_id: 3, period_id: 21 },
+               { id: 96, disp: 'Consumer confidence survey shows positive outlook.', factor: 0.2, stock_category_id: 4, period_id: 21 },
+               { id: 97, disp: 'Tech companies report strong earnings.', factor: 0.6, stock_category_id: 5, period_id: 21 },
+               { id: 98, disp: 'Telecom companies invest in infrastructure upgrades.', factor: 0.25, stock_category_id: 6, period_id: 21 },
+               { id: 99, disp: 'New aircraft orders boost manufacturing.', factor: 0.4, stock_category_id: 7, period_id: 22 },
+               { id: 100, disp: 'Commodity prices fluctuate on global events.', factor: -0.1, stock_category_id: 8, period_id: 22 },
+               { id: 101, disp: 'Green energy subsidies increased by government.', factor: 0.5, stock_category_id: 9, period_id: 22 },
+               { id: 102, disp: 'Autonomous driving technology faces regulatory hurdles.', factor: -0.2, stock_category_id: 1, period_id: 22 },
+               { id: 103, disp: 'Pharmaceutical mergers and acquisitions activity increases.', factor: 0.3, stock_category_id: 2, period_id: 22 },
+               { id: 104, disp: 'Stock market volatility impacts financial firms.', factor: -0.15, stock_category_id: 3, period_id: 22 },
+               { id: 105, disp: 'Seasonal demand boosts sales for beverage companies.', factor: 0.15, stock_category_id: 4, period_id: 22 },
+               { id: 106, disp: 'Cloud computing adoption continues to grow.', factor: 0.45, stock_category_id: 5, period_id: 22 },
+               { id: 107, disp: 'Data privacy concerns affect telecom sector.', factor: -0.1, stock_category_id: 6, period_id: 22 },
+               { id: 108, disp: 'Increased air travel demand expected for summer.', factor: 0.3, stock_category_id: 7, period_id: 23 },
+               { id: 109, disp: 'New mining techniques improve efficiency.', factor: 0.25, stock_category_id: 8, period_id: 23 },
+               { id: 110, disp: 'Global energy prices influenced by geopolitical events.', factor: 0.1, stock_category_id: 9, period_id: 23 },
+               { id: 111, disp: 'Supply chain disruptions impact auto production.', factor: -0.2, stock_category_id: 1, period_id: 23 },
+               { id: 112, disp: 'Research and development spending increases in pharma.', factor: 0.35, stock_category_id: 2, period_id: 23 },
+               { id: 113, disp: 'Banking sector faces increased regulation.', factor: -0.15, stock_category_id: 3, period_id: 23 },
+               { id: 114, disp: 'Consumer spending remains strong despite economic uncertainty.', factor: 0.2, stock_category_id: 4, period_id: 23 },
+               { id: 115, disp: 'Demand for IT services remains high.', factor: 0.4, stock_category_id: 5, period_id: 23 },
+               { id: 116, disp: 'Telecom companies explore new revenue streams.', factor: 0.15, stock_category_id: 6, period_id: 23 },
+               { id: 117, disp: 'Airline industry faces pilot shortages.', factor: -0.2, stock_category_id: 7, period_id: 24 },
+               { id: 118, disp: 'Environmental concerns impact mining operations.', factor: -0.15, stock_category_id: 8, period_id: 24 },
+               { id: 119, disp: 'Investment in fossil fuels decreases.', factor: -0.25, stock_category_id: 9, period_id: 24 },
+               { id: 120, disp: 'New car models receive positive reviews.', factor: 0.3, stock_category_id: 1, period_id: 24 },
+               { id: 121, disp: 'Pharmaceutical companies focus on rare diseases.', factor: 0.25, stock_category_id: 2, period_id: 24 },
+               { id: 122, disp: 'Fintech innovation disrupts traditional banking.', factor: 0.4, stock_category_id: 3, period_id: 24 },
+               { id: 123, disp: 'Healthy snack market continues to grow.', factor: 0.35, stock_category_id: 4, period_id: 24 },
+               { id: 124, disp: 'Demand for cybersecurity solutions increases.', factor: 0.5, stock_category_id: 5, period_id: 24 },
+               { id: 125, disp: 'Telecom companies invest in fiber optic networks.', factor: 0.2, stock_category_id: 6, period_id: 24 }
+         ];
+
+
+        const aiPlayerNames = [
+             { name: 'Gordon Gekko', type: 'aggressive' },
+             { name: 'Sherlock Holmes', type: 'value' }, // Changed from Warren Buffett
+             { name: 'Ethan Hunt', type: 'momentum' }, // Changed from Jordan Belfort
+             { name: 'Lisbeth Salander', type: 'analytical' },
+             { name: 'Tyler Durden', type: 'contrarian' },
+             { name: 'Agent Smith', type: 'godmode' } // Added Agent Smith
+         ];
+
+         // Fictional movie character names for default player name
+         const movieCharacterNames = [
+             "Neo", "Trinity", "Morpheus", "Sarah Connor", "John McClane",
+             "Ellen Ripley", "Marty McFly", "Doc Brown", "Indiana Jones", "Leia Organa",
+             "Luke Skywalker", "Han Solo", "Deckard", "Rick Deckard", "Beatrix Kiddo",
+             "The Bride", "Max Rockatansky", "Furiosa", "Imperator Furiosa", "Lara Croft",
+             "James Bond", "Jason Bourne", "Ethan Hunt", "Agent J", "Agent K",
+             "Katniss Everdeen", "Harry Potter", "Hermione Granger", "Ron Weasley", "Aragorn",
+             "Gandalf", "Frodo Baggins", "Samwise Gamgee", "Vito Corleone", "Michael Corleone",
+             "Tony Montana", "Hannibal Lecter", "Clarice Starling", "Jules Winnfield", "Vincent Vega",
+             "The Dude", "Walter Sobchak", "Donnie Kerabatsos", "Forrest Gump", "Captain Jack Sparrow",
+             "Elizabeth Swann", "Will Turner", "Inigo Montoya", "Westley", "Princess Buttercup",
+             "Ferris Bueller", "Cameron Frye", "Sloane Peterson", "Terminator", "Optimus Prime",
+             "Bumblebee", "WALL-E", "EVE", "Buzz Lightyear", "Woody",
+             "Elastigirl", "Mr. Incredible", "Violet Parr", "Dash Parr", "Jack-Jack Parr",
+             "Remy", "Linguini", "Anton Ego", "Merida", "Moana",
+             "Maui", "Miguel Rivera", "Hector Rivera", "Coco", "Shrek",
+             "Donkey", "Fiona", "Puss in Boots", "Po", "Master Shifu",
+             "Tigress", "Kung Fu Panda", "Hiccup Horrendous Haddock III", "Toothless", "Astrid Hofferson",
+             "Ezio Auditore da Firenze", "Altaïr Ibn-La'Ahad", "Ezio", "Altair", "Geralt of Rivia",
+             "Ciri", "Yennefer of Vengerberg", "Triss Merigold", "Commander Shepard", "Tali'Zorah",
+             "Garrus Vakarian", "Liara T'Soni", "Darth Vader", "Obi-Wan Kenobi", "Yoda",
+             "Emperor Palpatine", "Anakin Skywalker", "Padmé Amidala", "Mace Windu", "Count Dooku",
+             "General Grievous", "Kylo Ren", "Rey", "Finn", "Poe Dameron",
+             "BB-8", "Chewbacca", "C-3PO", "R2-D2", "K-2SO",
+             "Lando Calrissian", "Boba Fett", "Jango Fett", "Darth Maul", "Qui-Gon Jinn",
+             "Windu"
+         ];
+
+        const playerIcons = ['👤', '🤖', '💼', '💰', '📈', '📊', '👑', '🧙', '👽', '🕵️', '🕶️']; // Added icon for Agent Smith
+
+
+        // --- Game State Variables ---
+        let humanPlayer = {
+            name: '',
+            cash: 0,
+            portfolio: {}, // { stock_id: { shares: N, averageCost: C } }
+            portfolioHistory: {}, // { stock_id: [sharesRound1, sharesRound2, ...] }
+            transactionLog: [], // [{ type: 'Buy/Sell', stock_id: N, shares: N, session: Round, time: T }]
+            transactionsThisSession: 0, // Still track for min transactions
+            icon: playerIcons[0], // Assign human player the first icon
+            netWorthHistory: [] // Store net worth per session
+        };
+
+        let aiPlayers = []; // Array of AI player objects
+        let allPlayers = []; // Human player + AI players for leaderboard
+
+        let game_state = {
+            current_session: 1,
+            total_sessions: 10, // Fixed at 10
+            game_status: 'setup', // 'setup', 'trading', 'game_over'
+            session_news_ids: [], // Store ticker IDs for the current session's news
+            listed_stock_ids: [], // IDs of stocks selected for this game instance
+            usedNewsIds: [] // Track news IDs used in this game instance
+        };
+
+        let stocks = []; // Stocks selected for the current game instance
+        let stockPrices = {}; // { stock_id: [priceRound1, priceRound2, ...] } - Store price history here
+        let currentStockPrices = {}; // { stock_id: current_price }
+
+        const initialCash = 1000000; // Fictitious currency
+        const initialSharesPerStock = 100; // Initial shares for each listed stock
+        const fixedNumOpponents = 5; // Fixed number of AI opponents
+        const fixedNumRounds = 10; // Fixed number of rounds
+        const fixedNumCompanies = 10; // Fixed number of companies
+
+
+        // --- DOM elements ---
+        const setupPage = document.getElementById('setup-page');
+        const gameInterface = document.getElementById('game-interface');
+        const setupStatusMessagesEl = document.getElementById('setup-status-messages');
+        const playerNameInput = document.getElementById('player-name');
+        const includeAgentSmithCheckbox = document.getElementById('include-agent-smith'); // Get the checkbox
+        // Removed select elements for fixed parameters
+        const setupForm = document.getElementById('setup-form');
+        const startGameButton = document.getElementById('start-game-button');
+
+        const gameOverContent = document.getElementById('game-over-content'); // Changed ID
+        const finalLeaderboardTableBody = document.getElementById('final-leaderboard-table').querySelector('tbody');
+        const playAgainButton = document.getElementById('play-again-button');
+
+
+        const loggedInUsernameEl = document.getElementById('logged-in-username');
+
+        const sessionControlDiv = document.getElementById('session-control');
+        const currentSessionEl = document.getElementById('current-session');
+        const totalSessionsEl = document.getElementById('total-sessions');
+        const nextSessionButton = document.getElementById('next-session-button');
+        const gameStatusMessageEl = document.getElementById('game-status-message');
+
+        const statusMessagesEl = document.getElementById('status-messages');
+        const currentSessionDisplayEl = document.getElementById('current-session-display');
+        const currentCashEl = document.getElementById('current-cash');
+        const netWorthEl = document.getElementById('net-worth');
+        const stockListEl = document.getElementById('stock-list').querySelector('tbody');
+        const newsFeedEl = document.getElementById('news-feed');
+        const tickerTextEl = document.getElementById('ticker-text');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const contentSections = document.querySelectorAll('.content-section');
+        const leaderboardTableBody = document.getElementById('leaderboard-table').querySelector('tbody');
+        const fullLeaderboardTableBody = document.getElementById('full-leaderboard-table').querySelector('tbody');
+        const userRankEl = document.getElementById('user-rank');
+
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const leftColumn = document.getElementById('left-column');
+        const sidebarNewGameButton = document.getElementById('sidebar-new-game-button');
+
+        // In-page Confirmation Modal elements
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmationMessageEl = document.getElementById('confirmation-message');
+        const confirmAdvanceButton = document.getElementById('confirm-advance-button');
+        const cancelAdvanceButton = document.getElementById('cancel-advance-button');
+
+
+        // History and Log elements
+        const portfolioHistoryTableHead = document.getElementById('portfolio-history-table').querySelector('thead tr');
+        const portfolioHistoryTableBody = document.getElementById('portfolio-history-table').querySelector('tbody');
+        const stockHistoryTableHead = document.getElementById('stock-history-table').querySelector('thead tr');
+        const stockHistoryTableBody = document.getElementById('stock-history-table').querySelector('tbody');
+        const transactionLogTableBody = document.getElementById('transaction-log-table').querySelector('tbody');
+
+
+        // --- Utility Functions ---
+
+        // Helper function for random sampling
+        function randomSample(arr, num) {
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, num);
+        }
+
+         // Helper function for random integer within a range
+         function randomInt(min, max) {
+             return Math.floor(Math.random() * (max - min + 1)) + min;
+         }
+
+         // Helper function for formatting currency with commas and no decimals
+         function formatCurrency(amount) {
+             return Math.round(amount).toLocaleString('en-US');
+         }
+
+
+        // --- Game Setup and Initialization ---
+
+        setupForm.addEventListener('submit', handleSetupFormSubmit);
+        playAgainButton.addEventListener('click', resetGame);
+        hamburgerMenu.addEventListener('click', toggleHamburgerMenu);
+        sidebarNewGameButton.addEventListener('click', handleNewGameClick);
+        nextSessionButton.addEventListener('click', handleNextSessionClick);
+
+        // Add event listeners for navigation links
+        navLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const sectionId = event.target.dataset.section + '-section';
+                showSection(sectionId);
+
+                // Render specific content when section is shown
+                if (sectionId === 'portfolio-history-section') {
+                    renderPortfolioHistory(humanPlayer);
+                } else if (sectionId === 'stock-history-section') {
+                    renderStockHistory();
+                } else if (sectionId === 'transaction-log-section') {
+                    renderTransactionLog(humanPlayer);
+                } else if (sectionId === 'latest-news-section') {
+                    renderNewsFeed(); // News is loaded with market data
+                } else if (sectionId === 'full-leaderboard-section') {
+                    renderFullLeaderboard(allPlayers); // Render full leaderboard from all players
+                }
+            });
+        });
+
+
+        function handleSetupFormSubmit(event) {
+            event.preventDefault();
+
+            const playerName = playerNameInput.value.trim();
+            const includeAgentSmith = includeAgentSmithCheckbox.checked; // Get checkbox state
+
+            // Fixed game parameters
+            const numOpponents = fixedNumOpponents;
+            const numRounds = fixedNumRounds;
+            const numCompanies = fixedNumCompanies;
+
+
+            if (!playerName || playerName === playerNameInput.placeholder) { // Check if name is empty or still the placeholder
+                showSetupStatusMessage('Please enter your name.', true);
+                return;
+            }
+
+            // Initialize Game State
+            game_state.total_sessions = numRounds;
+            game_state.current_session = 1;
+            game_state.game_status = 'trading';
+            game_state.usedNewsIds = []; // Reset used news for a new game
+
+            // Select Stocks for this game instance from the defined pool
+            stocks = randomSample(stockPool, numCompanies);
+             game_state.listed_stock_ids = stocks.map(stock => stock.id); // Store selected stock IDs
+
+            // Initialize Human Player
+            humanPlayer.name = playerName;
+            humanPlayer.cash = initialCash;
+            humanPlayer.portfolio = {};
+            humanPlayer.portfolioHistory = {};
+            humanPlayer.transactionLog = [];
+            humanPlayer.transactionsThisSession = 0;
+            humanPlayer.icon = playerIcons[0]; // Assign human player the first icon
+            humanPlayer.netWorthHistory = []; // Initialize net worth history
+
+             // Give human player initial shares of ALL listed stocks
+             stocks.forEach(stock => {
+                  humanPlayer.portfolio[stock.id] = { shares: initialSharesPerStock, averageCost: stock.initial_price };
+             });
+
+
+            // Generate AI Players based on selection
+            aiPlayers = [];
+            const availableAIs = includeAgentSmith ? aiPlayerNames : aiPlayerNames.filter(ai => ai.type !== 'godmode');
+            const aiIcons = playerIcons.slice(1); // Icons for AI players
+
+            randomSample(availableAIs, numOpponents).forEach((aiInfo, index) => {
+                 const aiPortfolio = {};
+                 // Give AI players initial shares of ALL listed stocks
+                 stocks.forEach(stock => {
+                      aiPortfolio[stock.id] = { shares: initialSharesPerStock, averageCost: stock.initial_price };
+                 });
+
+                 // Find the correct icon for the AI type
+                 let aiIcon = '🤖'; // Default icon
+                 const iconIndex = aiPlayerNames.findIndex(nameInfo => nameInfo.type === aiInfo.type);
+                 if (iconIndex !== -1 && iconIndex < playerIcons.length) {
+                     aiIcon = playerIcons[iconIndex]; // Use the specific icon if available
+                 } else {
+                      // If a specific icon isn't defined or available, cycle through generic AI icons
+                      aiIcon = aiIcons[index % aiIcons.length];
+                 }
+
+
+                aiPlayers.push({
+                    name: aiInfo.name,
+                    type: aiInfo.type, // Store the AI type
+                    cash: initialCash,
+                    portfolio: aiPortfolio,
+                    portfolioHistory: {},
+                    transactionLog: [],
+                    transactionsThisSession: 0,
+                    icon: aiIcon, // Assign the determined icon
+                    netWorthHistory: [] // Initialize net worth history for AI
+                });
+            });
+
+
+            // Combine all players for leaderboard
+            allPlayers = [humanPlayer, ...aiPlayers];
+
+            // Initialize stock price history with initial prices for session 1
+            stockPrices = {};
+             stocks.forEach(stock => {
+                 stockPrices[stock.id] = [stock.initial_price];
+             });
+             // Set current prices to initial prices
+             currentStockPrices = {};
+             stocks.forEach(stock => {
+                 currentStockPrices[stock.id] = stock.initial_price;
+             });
+
+            // Generate news and simulate prices for Session 1
+            generateNewsForSession();
+            // simulatePriceChanges(); // Prices for session 1 are already set to initial prices
+
+
+            // Record initial portfolio history for all players (Session 1)
+            allPlayers.forEach(player => {
+                 player.portfolioHistory = {}; // Clear any previous history
+                 stocks.forEach(stock => {
+                     const holding = player.portfolio[stock.id] || { shares: 0 };
+                     if (!player.portfolioHistory[stock.id]) {
+                         player.portfolioHistory[stock.id] = [];
+                     }
+                     player.portfolioHistory[stock.id].push(holding.shares);
+                 });
+            });
+
+             // Calculate initial net worth for all players and populate leaderboard
+             allPlayers.forEach(player => {
+                 let portfolioValue = 0;
+                  stocks.forEach(stock => {
+                      const holding = player.portfolio[stock.id] || { shares: 0 };
+                      portfolioValue += holding.shares * stock.initial_price; // Use initial price for session 1
+                  });
+                  player.netWorth = player.cash + portfolioValue;
+                  player.netWorthHistory.push(player.netWorth); // Record initial net worth
+             });
+
+
+            // Transition to game interface
+            showGameInterface();
+            updateDisplay(); // Initial display update
+             showStatusMessage(`Welcome to QSE Reloaded, ${playerName}! Round 1 begins.`, false);
+        }
+
+         function showSetupStatusMessage(message, isError = false) {
+            setupStatusMessagesEl.textContent = message;
+            setupStatusMessagesEl.className = 'mb-4 ' + (isError ? 'error-message' : 'success-message');
+        }
+
+
+        function showGameInterface() {
+            setupPage.style.display = 'none';
+            gameOverContent.style.display = 'none'; // Ensure game over content is hidden
+            gameInterface.style.display = 'block';
+            loggedInUsernameEl.textContent = humanPlayer.name;
+        }
+
+         function showGameOverScreen() {
+             // Hide all content sections except the game over content
+             contentSections.forEach(section => {
+                 section.classList.remove('active');
+             });
+             // Show the game over content within the right column
+             gameOverContent.style.display = 'block';
+             renderFinalLeaderboard();
+         }
+
+
+        // --- Game Data Management (In-Memory) ---
+
+        // In standalone, game state is managed directly in JS variables.
+        // Persistence across browser sessions would require localStorage.
+
+        // --- UI Rendering Functions ---
+
+        function showStatusMessage(message, isError = false) {
+            statusMessagesEl.textContent = message;
+            statusMessagesEl.className = 'mb-4 ' + (isError ? 'error-message' : 'success-message');
+        }
+
+        function updateDashboard() {
+            let portfolioValue = 0;
+            // Ensure currentStockPrices are available
+            if (currentStockPrices && Object.keys(currentStockPrices).length > 0) {
+                for (const stockId in humanPlayer.portfolio) {
+                    const holding = humanPlayer.portfolio[stockId];
+                    const currentPrice = currentStockPrices[stockId];
+                    if (currentPrice !== undefined) {
+                        portfolioValue += holding.shares * currentPrice;
+                    }
+                }
+            }
+            const netWorth = humanPlayer.cash + portfolioValue;
+
+            // Update human player's net worth for leaderboard
+            humanPlayer.netWorth = netWorth;
+
+
+            currentSessionEl.textContent = game_state.current_session;
+            totalSessionsEl.textContent = game_state.total_sessions;
+            currentSessionDisplayEl.textContent = game_state.current_session;
+            currentCashEl.textContent = `$${formatCurrency(humanPlayer.cash)}`; // Formatted
+            netWorthEl.textContent = `$${formatCurrency(netWorth)}`; // Formatted
+
+             // Update host controls display (integrated into game interface)
+             updateHostControlsDisplay();
+
+             // Always render leaderboard as it's in the sidebar
+             renderLeaderboard();
+
+        }
+
+        // Handle Trade button click directly in the table - MOVED THIS FUNCTION UP
+        function handleTradeButtonClick(event) {
+            // Prevent trading if the game is over
+            if (game_state.game_status === 'game_over') {
+                showStatusMessage('The game is over. You cannot make any more trades.', true);
+                return;
+            }
+
+            const tradeControlsCell = event.target.closest('.trade-controls');
+            if (!tradeControlsCell) return; // Ensure we clicked within a trade controls cell
+
+            const stockId = parseInt(tradeControlsCell.dataset.stockId, 10);
+            const stock = stocks.find(s => s.id === stockId);
+            const quantityInput = tradeControlsCell.querySelector('input[type="number"]');
+            const tradeType = event.target.dataset.tradeType; // Get trade type from button data attribute
+
+            const quantity = parseInt(quantityInput.value, 10);
+
+            if (isNaN(quantity) || quantity <= 0) {
+                showStatusMessage('Please enter a valid quantity.', true);
+                return;
+            }
+
+             if (!stock) {
+                 showStatusMessage('Stock not found for trading.', true);
+                 return;
+             }
+
+             const holding = humanPlayer.portfolio[stockId] || { shares: 0, averageCost: 0 };
+             const currentPrice = currentStockPrices[stock.id] || stock.initial_price; // Use current price
+
+
+             let successfulTrade = false;
+             let message = '';
+
+            if (tradeType === 'buy') {
+                const cost = currentPrice * quantity;
+                if (humanPlayer.cash >= cost) {
+                    humanPlayer.cash -= cost;
+                    if (humanPlayer.portfolio[stockId]) {
+                        const currentHolding = humanPlayer.portfolio[stockId];
+                        const totalShares = currentHolding.shares + quantity;
+                        const totalCost = (currentHolding.shares * currentHolding.averageCost) + cost;
+                        humanPlayer.portfolio[stockId] = {
+                            shares: totalShares,
+                            averageCost: totalCost / totalShares
+                        };
+                    } else {
+                        humanPlayer.portfolio[stockId] = {
+                            shares: quantity,
+                            averageCost: currentPrice
+                        };
+                    }
+                    humanPlayer.transactionsThisSession++;
+                    humanPlayer.transactionLog.unshift({ type: 'Buy', stock_id: stockId, shares: quantity, session: `Round ${game_state.current_session}`, time: new Date().toLocaleString() }); // Add to front
+                    message = `Successfully bought ${quantity} shares of ${stock.company_name}.`;
+                    successfulTrade = true;
+                } else {
+                    message = 'Not enough cash to buy.';
+                    showStatusMessage(message, true);
+                }
+            } else if (tradeType === 'sell') {
+                 if (holding.shares < quantity) {
+                    message = 'Not enough shares to sell.';
+                    showStatusMessage(message, true);
+                    return;
+                }
+                const revenue = currentPrice * quantity;
+                humanPlayer.cash += revenue;
+                holding.shares -= quantity;
+
+                if (holding.shares === 0) {
+                    delete humanPlayer.portfolio[stockId]; // Remove from portfolio if no shares left
+                }
+                humanPlayer.transactionsThisSession++;
+                 humanPlayer.transactionLog.unshift({ type: 'Sell', stock_id: stockId, shares: quantity, session: `Round ${game_state.current_session}`, time: new Date().toLocaleString() }); // Add to front
+                message = `Successfully sold ${quantity} shares of ${stock.company_name}.`;
+                successfulTrade = true;
+            }
+
+            if (successfulTrade) {
+                 updateDisplay(); // Update UI immediately
+                 showStatusMessage(message, false);
+            }
+        }
+
+
+        function renderStockList() {
+            stockListEl.innerHTML = ''; // Clear current list
+            if (!stocks || stocks.length === 0 || !currentStockPrices || Object.keys(currentStockPrices).length === 0) {
+                 stockListEl.innerHTML = '<tr><td colspan="5">Loading stocks...</td></tr>';
+                 return;
+            }
+            stocks.forEach(stock => {
+                 const holding = humanPlayer.portfolio[stock.id] || { shares: 0, averageCost: 0 };
+                const currentPrice = currentStockPrices[stock.id] || stock.initial_price;
+                const totalValue = holding.shares * currentPrice;
+
+                // Calculate price change for color coding (Green/Red only)
+                let priceChangeClass = '';
+                if (game_state.current_session > 1 && stockPrices[stock.id] && stockPrices[stock.id][game_state.current_session - 2] !== undefined) {
+                    const previousPrice = stockPrices[stock.id][game_state.current_session - 2];
+                    const change = currentPrice - previousPrice;
+                    if (change > 0) {
+                        priceChangeClass = 'text-green';
+                    } else if (change < 0) {
+                        priceChangeClass = 'text-red';
+                    }
+                    // No class for zero change
+                }
+
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><a href="#" class="nav-link stock-link" data-stock-id="${stock.id}">${stock.company_name}</a></td>
+                    <td>${holding.shares}</td>
+                    <td class="${priceChangeClass}">$${formatCurrency(currentPrice)}</td> <td>$${formatCurrency(totalValue)}</td> <td class="trade-controls" data-stock-id="${stock.id}">
+                         <input type="number" value="1" min="1" ${game_state.game_status === 'game_over' ? 'disabled' : ''}> <button class="trade-button buy-button" data-trade-type="buy" ${game_state.game_status === 'game_over' ? 'disabled' : ''}>Buy</button> <button class="trade-button sell-button" data-trade-type="sell" ${game_state.game_status === 'game_over' ? 'disabled' : ''}>Sell</button> </td>
+                `;
+                stockListEl.appendChild(row);
+            });
+
+            // Add event listeners to the new Trade buttons
+            stockListEl.querySelectorAll('.trade-button').forEach(button => {
+                button.addEventListener('click', handleTradeButtonClick);
+            });
+
+             // Add event listeners to stock name links (if they should do something)
+             stockListEl.querySelectorAll('.stock-link').forEach(link => {
+                 link.addEventListener('click', (event) => {
+                     event.preventDefault();
+                     const stockId = parseInt(event.target.dataset.stockId, 10);
+                     const stock = stocks.find(s => s.id === stockId);
+                     if (stock) {
+                         alert(`Details for ${stock.company_name} (Symbol: ${stock.symbol})`);
+                         // TODO: Implement showing stock details or history on click
+                     }
+                 });
+             });
+        }
+
+
+        function renderNewsFeed() {
+            newsFeedEl.innerHTML = ''; // Clear current news
+            const newsForSession = game_state.session_news_ids.map(newsId => tickerData.find(t => t.id === newsId)).filter(item => item !== undefined);
+
+            if (!newsForSession || newsForSession.length === 0) {
+                 newsFeedEl.innerHTML = '<p>No news available for this round.</p>';
+                 tickerTextEl.innerHTML = 'No news available.'; // Use innerHTML here
+                 return;
+            }
+            // Join news text with separators, ensuring no extra separator at the end
+            const tickerContent = newsForSession.map(item => item.disp).join(' *** ');
+            tickerTextEl.innerHTML = tickerContent;
+
+            // Populate the latest news section
+            newsForSession.forEach(newsItem => {
+                const newsParagraph = document.createElement('p');
+                newsParagraph.textContent = newsItem.disp;
+                newsFeedEl.appendChild(newsParagraph);
+            });
+
+
+            // Reset animation if needed (optional, can make ticker jump)
+            // tickerTextEl.style.animation = 'none';
+            // tickerTextEl.offsetHeight; // Trigger reflow
+            // tickerTextEl.style.animation = null;
+        }
+
+        function renderLeaderboard() {
+            leaderboardTableBody.innerHTML = ''; // Clear current sidebar leaderboard
+
+            // Sort all players by net worth
+            const sortedPlayers = [...allPlayers].sort((a, b) => b.netWorth - a.netWorth);
+
+            if (!sortedPlayers || sortedPlayers.length === 0) {
+                leaderboardTableBody.innerHTML = '<tr><td colspan="3">Loading leaderboard...</td></tr>';
+                 userRankEl.textContent = 'Your Rank: -';
+                 return;
+            }
+
+            // Find the human player's rank
+            const humanPlayerIndex = sortedPlayers.findIndex(player => player.name === humanPlayer.name);
+            if (humanPlayerIndex !== -1) {
+                userRankEl.textContent = `Your Rank: ${humanPlayerIndex + 1}`;
+            } else {
+                 userRankEl.textContent = 'Your Rank: -';
+            }
+
+
+            // Display only top 5 players in the sidebar leaderboard
+            const playersToDisplay = sortedPlayers.slice(0, 5);
+
+            playersToDisplay.forEach((player, index) => {
+                 // Calculate worth change for color coding (Green/Red only)
+                 let worthChangeClass = '';
+                 if (game_state.current_session > 1 && player.netWorthHistory.length >= game_state.current_session) {
+                     const previousWorth = player.netWorthHistory[game_state.current_session - 2];
+                     const currentWorth = player.netWorth;
+                     const change = currentWorth - previousWorth;
+                     if (change > 0) {
+                         worthChangeClass = 'text-green';
+                     } else if (change < 0) {
+                         worthChangeClass = 'text-red';
+                     }
+                     // No class for zero change
+                 }
+
+
+                const row = document.createElement('tr');
+                 // Add class for human player row
+                 if (player.name === humanPlayer.name) {
+                     row.classList.add('human-player-row');
+                 }
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><span class="leaderboard-icon">${player.icon}</span>${player.name}</td>
+                    <td class="leaderboard-worth ${worthChangeClass}">$${formatCurrency(player.netWorth)}</td> `;
+                 // No direct style here, use the CSS class
+                 // if (player.name === humanPlayer.name) {
+                 //     row.style.backgroundColor = '#d0e9ff; font-weight: bold;'; /* Example highlight color and bold */
+                 // }
+                leaderboardTableBody.appendChild(row);
+            });
+
+             // Also render the full leaderboard section if it's active
+             if (document.getElementById('full-leaderboard-section').classList.contains('active')) {
+                 renderFullLeaderboard(allPlayers); // Render full leaderboard from all players
+             }
+        }
+
+         function renderFullLeaderboard(leaderboardData) {
+             fullLeaderboardTableBody.innerHTML = ''; // Clear current full leaderboard
+
+             // Sort by net worth for display
+             const sortedPlayers = [...leaderboardData].sort((a, b) => b.netWorth - a.netWorth);
+
+
+             if (!sortedPlayers || sortedPlayers.length === 0) {
+                 fullLeaderboardTableBody.innerHTML = '<tr><td colspan="6">No leaderboard data available.</td></td>';
+                 return;
+             }
+
+             sortedPlayers.forEach((player, index) => {
+                 const row = document.createElement('tr');
+
+                 // Add class for human player row
+                 if (player.name === humanPlayer.name) {
+                     row.classList.add('human-player-row');
+                 }
+
+                 // Calculate worth change for color coding (Green/Red only) for Net value column
+                 let netWorthChangeClass = '';
+                 if (game_state.current_session > 1 && player.netWorthHistory.length >= game_state.current_session) {
+                     const previousWorth = player.netWorthHistory[game_state.current_session - 2];
+                     const currentWorth = player.netWorth;
+                     const change = currentWorth - previousWorth;
+                      if (change > 0) {
+                         netWorthChangeClass = 'text-green';
+                     } else if (change < 0) {
+                         netWorthChangeClass = 'text-red';
+                     }
+                     // No class for zero change
+                 }
+
+
+                 row.innerHTML = `
+                     <td><span class="leaderboard-icon">${player.icon}</span></td>
+                     <td>${index + 1}</td>
+                     <td>${player.name}</td>
+                     <td>$${formatCurrency(player.cash)}</td> <td>$${formatCurrency(player.netWorth - player.cash)}</td> <td class="${netWorthChangeClass}">$${formatCurrency(player.netWorth)}</td> `;
+                  // No direct style here, use the CSS class
+                 // if (player.name === humanPlayer.name) {
+                 //     row.style.backgroundColor = '#d0e9ff; font-weight: bold;'; // Example highlight color and bold
+                 // }
+                 fullLeaderboardTableBody.appendChild(row);
+             });
+         }
+
+         function renderFinalLeaderboard() {
+              finalLeaderboardTableBody.innerHTML = ''; // Clear current final leaderboard
+
+              // Calculate final net worth for all players
+              allPlayers.forEach(player => {
+                  let portfolioValue = 0;
+                   if (currentStockPrices && Object.keys(currentStockPrices).length > 0) {
+                       for (const stockId in player.portfolio) {
+                           const holding = player.portfolio[stockId];
+                           const currentPrice = currentStockPrices[stockId];
+                           if (currentPrice !== undefined) {
+                               portfolioValue += holding.shares * currentPrice;
+                           }
+                       }
+                   }
+                   player.netWorth = player.cash + portfolioValue;
+              });
+
+             // Sort all players by net worth
+             const sortedPlayers = [...allPlayers].sort((a, b) => b.netWorth - a.netWorth);
+
+             if (!sortedPlayers || sortedPlayers.length === 0) {
+                 finalLeaderboardTableBody.innerHTML = '<tr><td colspan="6">No final standings available.</td></tr>';
+                 return;
+             }
+
+             sortedPlayers.forEach((player, index) => {
+                 const row = document.createElement('tr');
+
+                 // Add class for human player row
+                 if (player.name === humanPlayer.name) {
+                     row.classList.add('human-player-row');
+                 }
+
+                 // Calculate worth change for color coding (Green/Red only) for Net value column
+                 let netWorthChangeClass = '';
+                  // For the final leaderboard, the "change" is the total gain/loss from initial worth
+                  // Need to calculate the initial total worth correctly based on the selected stocks
+                  let initialTotalWorth = initialCash;
+                  stocks.forEach(stock => {
+                      initialTotalWorth += initialSharesPerStock * stock.initial_price;
+                  });
+
+                  const finalWorth = player.netWorth;
+                  const change = finalWorth - initialTotalWorth;
+
+                  if (change > 0) {
+                      netWorthChangeClass = 'text-green';
+                  } else if (change < 0) {
+                      netWorthChangeClass = 'text-red';
+                  }
+                  // No class for zero change
+
+
+                 row.innerHTML = `
+                     <td><span class="leaderboard-icon">${player.icon}</span></td>
+                     <td>${index + 1}</td>
+                     <td>${player.name}</td>
+                     <td>$${formatCurrency(player.cash)}</td> <td>$${formatCurrency(player.netWorth - player.cash)}</td> <td class="${netWorthChangeClass}">$${formatCurrency(player.netWorth)}</td> `;
+                 finalLeaderboardTableBody.appendChild(row);
+             });
+         }
+
+
+        function showSection(sectionId) {
+            // Hide game over content if visible
+            gameOverContent.style.display = 'none';
+
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            } else {
+                 console.error(`Section with ID ${sectionId} not found.`);
+                 // Optionally, default to a known section like portfolios
+                 document.getElementById('portfolios-section').classList.add('active');
+            }
+
+
+            // Update active navigation link (basic example)
+            navLinks.forEach(link => {
+                if (link.dataset.section + '-section' === sectionId) {
+                    link.classList.add('active'); // Add active class
+                } else {
+                    link.classList.remove('active'); // Remove active class
+                }
+            });
+
+
+            // Close hamburger menu on section selection (mobile)
+            if (leftColumn.classList.contains('open')) {
+                toggleHamburgerMenu();
+            }
+
+
+             // Render specific content when section is shown
+             if (sectionId === 'portfolio-history-section') {
+                 renderPortfolioHistory(humanPlayer);
+             } else if (sectionId === 'stock-history-section') {
+                 renderStockHistory();
+             } else if (sectionId === 'transaction-log-section') {
+                 renderTransactionLog(humanPlayer);
+             } else if (sectionId === 'latest-news-section') {
+                 renderNewsFeed(); // News is loaded with market data
+             } else if (sectionId === 'full-leaderboard-section') {
+                 renderFullLeaderboard(allPlayers); // Render full leaderboard from all players
+             }
+        }
+
+        // Handle navigation link clicks
+        navLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const sectionId = event.target.dataset.section + '-section';
+                showSection(sectionId);
+            });
+        });
+
+
+         // --- AI Trading Logic ---
+         function executeAITrades() {
+             aiPlayers.forEach(aiPlayer => {
+                 const newsForSession = game_state.session_news_ids.map(newsId => tickerData.find(t => t.id === newsId)).filter(item => item !== undefined);
+
+                 // Calculate a simple "sentiment" score per stock based on news factors for the current session
+                 const stockSentiment = {};
+                 stocks.forEach(stock => stockSentiment[stock.id] = 0);
+
+                 newsForSession.forEach(newsItem => {
+                     const categoryId = newsItem.stock_category_id;
+                     const factor = newsItem.factor;
+
+                     if (fullCategoryMap[categoryId]) {
+                         fullCategoryMap[categoryId].forEach(symbol => {
+                             const stock = stocks.find(s => s.symbol === symbol);
+                             if (stock && game_state.listed_stock_ids.includes(stock.id)) {
+                                 stockSentiment[stock.id] += factor;
+                             }
+                         });
+                     }
+                 });
+
+                 // Implement distinct trading behaviors based on AI type
+                 stocks.forEach(stock => {
+                     const sentiment = stockSentiment[stock.id] || 0;
+                     const currentPrice = currentStockPrices[stock.id] || stock.initial_price;
+                     const aiHolding = aiPlayer.portfolio[stock.id] || { shares: 0, averageCost: 0 };
+
+                     let tradeAction = null;
+                     let tradeQuantity = 0;
+
+                     // --- Agent Smith Logic (God Mode - Enhanced) ---
+                     if (aiPlayer.type === 'godmode') {
+                         // Agent Smith sees the news factors directly and calculates total sentiment per stock
+                         let totalSentimentForStock = 0;
+                         newsForSession.forEach(newsItem => {
+                             const categoryId = newsItem.stock_category_id;
+                             const factor = newsItem.factor;
+                             // Check if the current stock belongs to the news category
+                             if (fullCategoryMap[categoryId] && fullCategoryMap[categoryId].some(symbol => stocks.find(s => s.symbol === symbol)?.id === stock.id)) {
+                                  totalSentimentForStock += factor;
+                             }
+                         });
+
+                         // Determine optimal trade based on total sentiment
+                         if (totalSentimentForStock > 0) { // Positive sentiment: Buy aggressively
+                             tradeAction = 'buy';
+                             // Buy as many shares as possible, up to a very large quantity
+                             tradeQuantity = Math.floor(aiPlayer.cash / currentPrice);
+                             // Limit the quantity to prevent extremely large numbers in logs, but still significant
+                             tradeQuantity = Math.min(tradeQuantity, 500); // Buy up to 500 shares if cash allows
+                         } else if (totalSentimentForStock < 0) { // Negative sentiment: Sell aggressively (liquidate)
+                             tradeAction = 'sell';
+                             tradeQuantity = aiHolding.shares; // Sell all shares
+                         }
+                         // If totalSentimentForStock is 0, no trade for this stock
+                     } else {
+                         // --- Other AI Logic (Existing) ---
+                         switch (aiPlayer.type) {
+                             case 'aggressive':
+                                 if (sentiment > 0.3) {
+                                     tradeAction = 'buy';
+                                     tradeQuantity = randomInt(5, 20);
+                                 } else if (sentiment < -0.3) {
+                                     tradeAction = 'sell';
+                                     tradeQuantity = randomInt(5, 20);
+                                 } else if (game_state.current_session === 1 && Math.random() < 0.5) { // Ensure some activity in Round 1
+                                      tradeAction = Math.random() < 0.5 ? 'buy' : 'sell';
+                                      tradeQuantity = randomInt(1, 5);
+                                 }
+                                 break;
+
+                             case 'value':
+                                 if (currentPrice < stock.initial_price * 0.8 && aiPlayer.cash > currentPrice * 5) {
+                                     tradeAction = 'buy';
+                                     tradeQuantity = randomInt(1, 5);
+                                 } else if (currentPrice > stock.initial_price * 1.5 && aiHolding.shares > 0) {
+                                     tradeAction = 'sell';
+                                     tradeQuantity = randomInt(1, Math.min(aiHolding.shares, 5));
+                                 } else if (game_state.current_session === 1 && Math.random() < 0.3) { // Ensure some activity in Round 1
+                                      tradeAction = Math.random() < 0.5 ? 'buy' : 'sell';
+                                      tradeQuantity = randomInt(1, 3);
+                                 }
+                                 break;
+
+                             case 'momentum':
+                                 if (game_state.current_session > 1 && stockPrices[stock.id] && stockPrices[stock.id][game_state.current_session - 2] !== undefined) {
+                                     const previousPrice = stockPrices[stock.id][game_state.current_session - 2];
+                                     const priceChange = currentPrice - previousPrice;
+
+                                     if (priceChange > (currentPrice * 0.01)) {
+                                         tradeAction = 'buy';
+                                         tradeQuantity = randomInt(1, 10);
+                                     } else if (priceChange < -(currentPrice * 0.01)) {
+                                         tradeAction = 'sell';
+                                         tradeQuantity = randomInt(1, Math.min(aiHolding.shares, 10));
+                                     }
+                                 } else if (game_state.current_session === 1 && Math.random() < 0.1) { // Small chance of random trade in Round 1
+                                      tradeAction = Math.random() < 0.5 ? 'buy' : 'sell';
+                                      tradeQuantity = randomInt(1, 2);
+                                 }
+                                 break;
+
+                             case 'analytical':
+                                 if (sentiment > 0.15) {
+                                     tradeAction = 'buy';
+                                     tradeQuantity = randomInt(2, 8);
+                                 } else if (sentiment < -0.15) {
+                                     tradeAction = 'sell';
+                                     tradeQuantity = randomInt(2, Math.min(aiHolding.shares, 8));
+                                 } else if (game_state.current_session === 1 && Math.random() < 0.4) { // Ensure some activity in Round 1
+                                      tradeAction = Math.random() < 0.5 ? 'buy' : 'sell';
+                                      tradeQuantity = randomInt(1, 4);
+                                 }
+                                 break;
+
+                             case 'contrarian':
+                                 const contrarianChance = 0.3;
+                                 if (Math.random() < contrarianChance) {
+                                     if (sentiment > 0.2) {
+                                         tradeAction = 'sell';
+                                         tradeQuantity = randomInt(1, Math.min(aiHolding.shares, 5));
+                                     } else if (sentiment < -0.2) {
+                                         tradeAction = 'buy';
+                                         tradeQuantity = randomInt(1, 5);
+                                     }
+                                 } else {
+                                     if (Math.random() < 0.15) { // Slightly increased chance of random trade in Round 1
+                                         tradeAction = Math.random() < 0.5 ? 'buy' : 'sell';
+                                         tradeQuantity = randomInt(1, 3);
+                                     }
+                                 }
+                                 break;
+
+                             default:
+                                 // Default simple random trading (fallback) - Ensure some activity in Round 1
+                                 if (Math.random() < 0.2 || game_state.current_session === 1) {
+                                     tradeAction = Math.random() < 0.5 ? 'buy' : 'sell';
+                                     tradeQuantity = randomInt(1, 5);
+                                 }
+                                 break;
+                         }
+                     }
+
+
+                     // Execute the trade if an action and quantity were determined
+                     if (tradeAction === 'buy' && tradeQuantity > 0) {
+                         const cost = currentPrice * tradeQuantity;
+                         if (aiPlayer.cash >= cost) {
+                             aiPlayer.cash -= cost;
+                             if (aiPlayer.portfolio[stock.id]) {
+                                 const currentHolding = aiPlayer.portfolio[stock.id];
+                                 const totalShares = currentHolding.shares + tradeQuantity;
+                                 const totalCost = (currentHolding.shares * currentHolding.averageCost) + cost;
+                                 aiPlayer.portfolio[stock.id] = {
+                                     shares: totalShares,
+                                     averageCost: totalCost / totalShares
+                                 };
+                             } else {
+                                 aiPlayer.portfolio[stock.id] = {
+                                     shares: tradeQuantity,
+                                     averageCost: currentPrice
+                                 };
+                             }
+                             aiPlayer.transactionLog.unshift({ type: 'Buy', stock_id: stock.id, shares: tradeQuantity, session: `Round ${game_state.current_session}`, time: new Date().toLocaleString() });
+                             // console.log(`${aiPlayer.name} (${aiPlayer.type}) bought ${tradeQuantity} of ${stock.symbol}`);
+                         }
+
+                     } else if (tradeAction === 'sell' && tradeQuantity > 0 && aiHolding.shares >= tradeQuantity) {
+                         const revenue = currentPrice * tradeQuantity;
+                         aiPlayer.cash += revenue;
+                         aiHolding.shares -= tradeQuantity;
+
+                         if (aiHolding.shares === 0) {
+                             delete aiPlayer.portfolio[stock.id];
+                         }
+                         aiPlayer.transactionLog.unshift({ type: 'Sell', stock_id: stock.id, shares: tradeQuantity, session: `Round ${game_state.current_session}`, time: new Date().toLocaleString() });
+                         // console.log(`${aiPlayer.name} (${aiPlayer.type}) sold ${tradeQuantity} of ${stock.symbol}`);
+                     }
+                 });
+             });
+         }
+
+
+        // Function to simulate stock price changes based on news factors (In-Memory)
+        function simulatePriceChanges() {
+            // Get prices from the end of the previous session (which are the starting prices for the current session)
+            const previousSessionPrices = {};
+            stocks.forEach(stock => {
+                 if (stockPrices[stock.id] && stockPrices[stock.id][game_state.current_session - 2] !== undefined) {
+                     previousSessionPrices[stock.id] = stockPrices[stock.id][game_state.current_session - 2];
+                 } else {
+                     previousSessionPrices[stock.id] = stock.initial_price;
+                 }
+            });
+
+
+            // Apply influence from current session's news
+            const newsForSession = game_state.session_news_ids.map(newsId => tickerData.find(t => t.id === newsId)).filter(item => item !== undefined);
+
+            const priceChanges = {}; // Calculate total change per stock
+            stocks.forEach(stock => priceChanges[stock.id] = 0);
+
+
+            newsForSession.forEach(newsItem => {
+                const categoryId = newsItem.stock_category_id;
+                const factor = newsItem.factor;
+
+                if (fullCategoryMap[categoryId]) { // Use fullCategoryMap to find relevant stocks
+                    fullCategoryMap[categoryId].forEach(symbol => {
+                        const stock = stocks.find(s => s.symbol === symbol); // Check if this stock is in the *listed* stocks
+                        if (stock && game_state.listed_stock_ids.includes(stock.id)) { // Check if stock is listed
+                            const currentPrice = previousSessionPrices[stock.id] || stock.initial_price;
+                            const baseVolatility = 10; // Adjust this value to control overall price movement
+                            priceChanges[stock.id] += factor * baseVolatility * (currentPrice / 100);
+                        }
+                    });
+                }
+            });
+
+             // Calculate new prices for the current session
+             stocks.forEach(stock => {
+                 const previousPrice = previousSessionPrices[stock.id] || stock.initial_price;
+                 let newPrice = previousPrice + priceChanges[stock.id];
+                 if (newPrice < 0.01) newPrice = 0.01;
+                 currentStockPrices[stock.id] = newPrice;
+
+                 // Record the new price in history
+                 if (!stockPrices[stock.id]) {
+                     stockPrices[stock.id] = [];
+                 }
+                  // Pad with nulls if necessary
+                 while(stockPrices[stock.id].length < game_state.current_session - 1) {
+                         stockPrices[stock.id].push(null); // Pad with nulls for missing previous rounds
+                 }
+                 stockPrices[stock.id].push(newPrice);
+             });
+        }
+
+        // Function to generate news for a session (In-Memory)
+        function generateNewsForSession() {
+             game_state.session_news_ids = []; // Clear previous news IDs
+
+             const numNewsItems = randomInt(2, 4); // Generate 2-4 news items per session
+
+             // Get the categories of the currently listed stocks
+             const listedCategoryIds = new Set(stocks.map(stock => stock.category_id));
+             const categoriesToCover = Array.from(listedCategoryIds);
+
+             const selectedNews = [];
+             const availableNews = tickerData.filter(newsItem => listedCategoryIds.has(newsItem.stock_category_id) && !game_state.usedNewsIds.includes(newsItem.id));
+
+             // Ensure at least one news item per listed category, if available and not used
+             categoriesToCover.forEach(categoryId => {
+                 const newsForCategory = availableNews.filter(item => item.stock_category_id === categoryId);
+                 if (newsForCategory.length > 0) {
+                     const selectedItem = randomSample(newsForCategory, 1)[0];
+                     if (selectedItem && !selectedNews.some(item => item.id === selectedItem.id)) {
+                         selectedNews.push(selectedItem);
+                     }
+                 }
+             });
+
+             // Add more random news if needed to reach numNewsItems, from remaining available news
+             const remainingNews = availableNews.filter(item => !selectedNews.some(newsItem => newsItem.id === item.id));
+             const additionalNewsCount = numNewsItems - selectedNews.length;
+
+             if (additionalNewsCount > 0 && remainingNews.length > 0) {
+                 const additionalNews = randomSample(remainingNews, Math.min(additionalNewsCount, remainingNews.length));
+                 selectedNews.push(...additionalNews);
+             }
+
+             game_state.session_news_ids = selectedNews.map(item => item.id);
+             game_state.usedNewsIds.push(...game_state.session_news_ids); // Add to used news
+
+        }
+
+
+        // Function to save current portfolio holdings for history (In-Memory)
+        function recordPortfolioHistory() {
+             allPlayers.forEach(player => {
+                 // Record portfolio history for all stocks, even if not currently held
+                 stocks.forEach(stock => {
+                     const holding = player.portfolio[stock.id] || { shares: 0 };
+                      if (!player.portfolioHistory[stock.id]) {
+                         player.portfolioHistory[stock.id] = [];
+                     }
+                      // Pad with nulls for previous sessions if needed
+                     while(player.portfolioHistory[stock.id].length < game_state.current_session - 1) {
+                         player.portfolioHistory[stock.id].push(null);
+                     }
+                     player.portfolioHistory[stock.id].push(holding.shares);
+                 });
+             });
+        }
+
+
+        // Function to render Portfolio History (In-Memory)
+        function renderPortfolioHistory(player) { // Takes a player object
+             portfolioHistoryTableBody.innerHTML = '';
+             // Update table headers for periods
+             let headerHTML = '<th>Company</th>';
+             for (let i = 1; i <= game_state.total_sessions; i++) {
+                 headerHTML += `<th>Round ${i}</th>`; // Changed to "Round i"
+             }
+             portfolioHistoryTableHead.innerHTML = headerHTML;
+
+             const playerPortfolioHistory = player.portfolioHistory;
+
+             // Get all unique stock IDs that have ever been in the portfolio or listed stocks
+             const allStockIds = new Set([...Object.keys(playerPortfolioHistory).map(id => parseInt(id, 10)), ...stocks.map(stock => stock.id)]);
+
+             if (allStockIds.size === 0) {
+                 portfolioHistoryTableBody.innerHTML = '<tr><td colspan="11">No portfolio history available.</td></tr>';
+                 return;
+             }
+
+             allStockIds.forEach(stockId => {
+                 const row = document.createElement('tr');
+                 const stock = stocks.find(s => s.id === stockId);
+                 let rowHTML = `<td>${stock?.company_name || `Stock ${stockId}`}</td>`; // Use company name if found, otherwise symbol
+                 for (let i = 0; i < game_state.total_sessions; i++) {
+                     const shares = playerPortfolioHistory[stockId] && playerPortfolioHistory[stockId][i] !== undefined ? playerPortfolioHistory[stockId][i] : '-';
+                     rowHTML += `<td>${shares}</td>`;
+                 }
+                 row.innerHTML = rowHTML;
+                 portfolioHistoryTableBody.appendChild(row);
+             });
+        }
+
+        // Function to render Stock History (In-Memory)
+        function renderStockHistory() {
+            // Update table headers for periods
+            let headerHTML = '<th>Stock</th>';
+            for (let i = 1; i <= game_state.total_sessions; i++) {
+                headerHTML += `<th>Round ${i}</th>`; // Changed to "Round i"
+            }
+            stockHistoryTableHead.innerHTML = headerHTML;
+
+            stockHistoryTableBody.innerHTML = '';
+            if (!stocks || stocks.length === 0 || !stockPrices || Object.keys(stockPrices).length === 0) {
+                 stockHistoryTableBody.innerHTML = '<tr><td colspan="11">Loading stock history...</td></tr>';
+                 return;
+            }
+             stocks.forEach(stock => {
+                 const row = document.createElement('tr');
+                 let rowHTML = `<td>${stock.company_name}</td>`;
+                 for (let i = 0; i < game_state.total_sessions; i++) {
+                     const price = stockPrices[stock.id] && stockPrices[stock.id][i] !== undefined ? `$${formatCurrency(stockPrices[stock.id][i])}` : '-'; // Formatted
+                     rowHTML += `<td>${price}</td>`;
+                 }
+                 row.innerHTML = rowHTML;
+                 stockHistoryTableBody.appendChild(row);
+             });
+        }
+
+         // Function to render Transaction Log (In-Memory)
+        function renderTransactionLog(player) { // Takes a player object
+            transactionLogTableBody.innerHTML = '';
+            const playerTransactionLog = player.transactionLog;
+
+            if (!playerTransactionLog || playerTransactionLog.length === 0) {
+                 transactionLogTableBody.innerHTML = '<tr><td colspan="5">No transactions recorded yet.</td></tr>';
+                 return;
+            }
+            // Transaction log is stored in order, display most recent first
+            const reversedLog = [...playerTransactionLog].reverse();
+            reversedLog.forEach(log => {
+                const row = document.createElement('tr');
+                const stock = stocks.find(s => s.id === log.stock_id);
+                row.innerHTML = `
+                    <td>${log.type}</td>
+                    <td>${stock?.company_name || `Stock ${log.stock_id}`}</td>
+                    <td>${log.shares}</td>
+                    <td>${log.session}</td>
+                    <td>${log.time || '-'}</td>
+                `;
+                transactionLogTableBody.appendChild(row);
+            });
+        }
+
+
+        // --- Host Control Functions (Integrated) ---
+
+        function updateHostControlsDisplay() {
+             currentSessionEl.textContent = game_state.current_session;
+             totalSessionsEl.textContent = game_state.total_sessions;
+
+             if (game_state.current_session > game_state.total_sessions) {
+                 nextSessionButton.disabled = true;
+                 gameStatusMessageEl.textContent = 'Game Over!';
+                 gameStatusMessageEl.className = 'status-message success-message';
+             } else {
+                 nextSessionButton.disabled = false;
+                 gameStatusMessageEl.textContent = ''; // Clear message during trading
+                 gameStatusMessageEl.className = 'status-message';
+             }
+        }
+
+         // Function to show the in-page confirmation modal
+         function showConfirmationModal(message = 'Are you sure?', onConfirm = null, onCancel = null) {
+             confirmationMessageEl.textContent = message;
+             // Remove previous event listeners to prevent duplicates
+             confirmAdvanceButton.onclick = null; // Clear previous handler
+             cancelAdvanceButton.onclick = null; // Clear previous handler
+
+
+             confirmAdvanceButton.onclick = () => {
+                 hideConfirmationModal();
+                 if (onConfirm) onConfirm();
+             };
+             cancelAdvanceButton.onclick = () => {
+                 hideConfirmationModal();
+                 if (onCancel) onCancel();
+             };
+
+             confirmationModal.classList.add('visible');
+         }
+
+         // Function to hide the in-page confirmation modal
+         function hideConfirmationModal() {
+             confirmationModal.classList.remove('visible');
+             // Clear the temporary click handlers
+             confirmAdvanceButton.onclick = null;
+             cancelAdvanceButton.onclick = null;
+         }
+
+
+         function handleNextSessionClick() {
+              console.log("handleNextSessionClick triggered"); // Added logging
+              // Show the in-page confirmation modal instead of the browser confirm
+              showConfirmationModal(`Are you sure you want to end Round ${game_state.current_session} and advance to the next?`, handleNextSession, () => { console.log("In-page Confirmation cancelled."); });
+         }
+
+
+        function handleNextSession() {
+             console.log("handleNextSession triggered"); // Added logging
+
+            if (game_state.current_session > game_state.total_sessions) {
+                // Game is already over, show final screen again
+                showGameOverScreen();
+                return;
+            }
+
+            // Record history for the session that is *ending* for all players
+            recordPortfolioHistory();
+            console.log("Portfolio history recorded."); // Added logging
+
+
+            // Execute AI trades for the session that is *ending*
+            executeAITrades();
+            console.log("AI trades executed."); // Added logging
+
+
+            // Calculate and record net worth for the session that is *ending* for all players
+            allPlayers.forEach(player => {
+                 let portfolioValue = 0;
+                  if (currentStockPrices && Object.keys(currentStockPrices).length > 0) {
+                       for (const stockId in player.portfolio) {
+                           const holding = player.portfolio[stockId];
+                           const currentPrice = currentStockPrices[stockId];
+                           if (currentPrice !== undefined) {
+                               portfolioValue += holding.shares * currentPrice;
+                           }
+                       }
+                   }
+                   player.netWorth = player.cash + portfolioValue;
+                   player.netWorthHistory.push(player.netWorth); // Record net worth for the session that just ended
+            });
+            console.log("Net worth recorded for all players."); // Added logging
+
+
+            // Advance session number
+            game_state.current_session++;
+            humanPlayer.transactionsThisSession = 0; // Reset human player transactions
+            console.log(`Advanced to session: ${game_state.current_session}`); // Added logging
+
+
+            if (game_state.current_session > game_state.total_sessions) {
+                 // Game Over
+                 game_state.game_status = 'game_over';
+                 updateDisplay(); // Final display update
+                 showGameOverScreen(); // Show game over content
+                 showStatusMessage('Game Over! View the final leaderboard.', false); // Update status message
+                 console.log("Game Over."); // Added logging
+            } else {
+                 // Generate news and simulate prices for the *new* session
+                 generateNewsForSession();
+                 console.log("News generated for new session."); // Added logging
+
+                 simulatePriceChanges(); // This will calculate and record prices for the new session
+                 console.log("Prices simulated for new session."); // Added logging
+
+
+                 // Update game state status
+                 game_state.game_status = 'trading';
+
+                 showStatusMessage(`Round ${game_state.current_session}/${game_state.total_sessions} begins!`, false);
+                 updateDisplay(); // Update UI after simulating day change
+                 showSection('portfolios-section'); // Go back to portfolios after session advance
+                 console.log("New round started, display updated."); // Added logging
+            }
+        }
+
+        function resetGame() {
+             // Confirm before starting a new game - using in-page modal for consistency
+             showConfirmationModal('Are you sure you want to start a new game? Your current progress will be lost.', () => {
+                 // Reset all game state variables to initial values
+                 humanPlayer = {
+                     name: '',
+                     cash: initialCash,
+                     portfolio: {},
+                     portfolioHistory: {},
+                     transactionLog: [],
+                     transactionsThisSession: 0,
+                     icon: playerIcons[0],
+                     netWorthHistory: []
+                 };
+                 aiPlayers = [];
+                 allPlayers = [];
+                 game_state = {
+                     current_session: 1,
+                     total_sessions: fixedNumRounds, // Use fixed value
+                     game_status: 'setup',
+                     session_news_ids: [],
+                     listed_stock_ids: [],
+                     usedNewsIds: [] // Reset used news
+                 };
+                 stocks = [];
+                 stockPrices = {};
+                 currentStockPrices = {};
+
+                 // Clear UI elements
+                 stockListEl.innerHTML = '';
+                 newsFeedEl.innerHTML = '';
+                 tickerTextEl.textContent = '';
+                 leaderboardTableBody.innerHTML = '';
+                 fullLeaderboardTableBody.innerHTML = '';
+                 finalLeaderboardTableBody.innerHTML = '';
+                 userRankEl.textContent = 'Your Rank: -';
+                 currentSessionEl.textContent = '1';
+                 totalSessionsEl.textContent = fixedNumRounds; // Use fixed value
+                 currentSessionDisplayEl.textContent = '1';
+                 currentCashEl.textContent = '$0.00';
+                 netWorthEl.textContent = '$0.00';
+                 statusMessagesEl.textContent = '';
+                 gameStatusMessageEl.textContent = '';
+                 setupStatusMessagesEl.textContent = '';
+
+                 // Hide game over content
+                 gameOverContent.style.display = 'none';
+                 // Hide all content sections
+                 contentSections.forEach(section => {
+                     section.classList.remove('active');
+                 });
+
+
+                 // Show the setup page and hide game interface
+                 setupPage.style.display = 'block';
+                 gameInterface.style.display = 'none';
+
+
+                 // Set a random default player name on reset
+                  playerNameInput.value = randomSample(movieCharacterNames, 1)[0];
+                  playerNameInput.placeholder = 'Enter your name'; // Keep placeholder for clarity if user deletes
+
+                  // Ensure buttons are enabled
+                  nextSessionButton.disabled = false;
+
+                  // Close hamburger menu if open
+                  if (leftColumn.classList.contains('open')) {
+                      toggleHamburgerMenu();
+                  }
+
+                  // Crucially, update the display after resetting and showing the game interface
+                  updateDisplay();
+             }); // No cancel handler needed for reset confirmation
+        }
+
+         // Hamburger menu toggle function
+         function toggleHamburgerMenu() {
+             leftColumn.classList.toggle('open');
+             // Close the sidebar if clicking outside on mobile
+             if (leftColumn.classList.contains('open')) {
+                 document.addEventListener('click', closeHamburgerMenuOutside);
+             } else {
+                 document.removeEventListener('click', closeHamburgerMenuOutside);
+             }
+         }
+
+         // Function to close hamburger menu if click is outside
+         function closeHamburgerMenuOutside(event) {
+             const isClickInside = leftColumn.contains(event.target) || hamburgerMenu.contains(event.target);
+             // Also check if the click is inside the confirmation modal
+             const isClickInsideModal = confirmationModal.contains(event.target);
+
+             if (!isClickInside && leftColumn.classList.contains('open') && !isClickInsideModal) {
+                 toggleHamburgerMenu();
+             }
+         }
+
+         // Handle New Game button click in sidebar
+         function handleNewGameClick() {
+             // Use the resetGame function which now includes the in-page confirmation
+             resetGame();
+         }
+
+
+        // Function to update all display sections
+        function updateDisplay() {
+            updateDashboard();
+            renderStockList();
+            renderNewsFeed();
+            renderLeaderboard(); // Always render the sidebar and potentially full leaderboard
+            // History, log, and charts rendered when their sections are active
+        }
+
+
+        // --- Initial Setup ---
+
+        // Show the setup page initially
+        setupPage.style.display = 'block';
+        gameInterface.style.display = 'none';
+
+        // Set a random default player name on initial load
+        playerNameInput.value = randomSample(movieCharacterNames, 1)[0];
+        playerNameInput.placeholder = 'Enter your name';
+
+
+        // Initial update of host controls display (uses default game_state)
+        updateHostControlsDisplay();
+
+
+    </script>
+
+</body>
+</html>
